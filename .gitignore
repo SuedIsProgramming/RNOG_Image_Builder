@@ -1,1 +1,4 @@
 venv
+*.hdf5
+*.png
+*.nur
