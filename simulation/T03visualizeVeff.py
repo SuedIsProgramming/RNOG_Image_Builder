@@ -11,7 +11,7 @@ for iE, event in enumerate(event_reader.run()):
     for iStation, station in enumerate(event.get_stations()):
 
         # a fig and axes for our waveforms
-        fig, axs = plt.subplots(8, 1, figsize=(5,20))
+        fig, axs = plt.subplots(4, 1, figsize=(5,20))
 
         # this loops through "mock data" (with noise added, etc.)
         for ch in station.iter_channels():
