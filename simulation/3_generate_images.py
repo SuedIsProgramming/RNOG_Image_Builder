@@ -21,8 +21,8 @@ for iE, event in enumerate(event_reader.run()):
         for ch in station.iter_channels():
             volts = ch.get_trace()
             times = ch.get_times()
-            axs[ch.get_id()].plot(times, volts, label='V noise') # type: ignore
-            axs[ch.get_id()].set_title(f"Station {station.get_id()}, Channel {ch.get_id()}") # type: ignore
+            axs[ch.get_id()].plot(times, volts, label='V') # type: ignore
+            axs[ch.get_id()].set_title(f"Event number {iE} | Station {station.get_id()}, Channel {ch.get_id()}") # type: ignore
         
         # this loops through *MC truth* waveforms (before noise was added)
         # this may prove useful at some point
@@ -32,9 +32,9 @@ for iE, event in enumerate(event_reader.run()):
                 volts = sim_ch.get_trace()
                 times = sim_ch.get_times()
                 if sim_ch.get_ray_tracing_solution_id() == 0: # If else check to add direct and reflected traces.
-                    axs[sim_ch.get_id()].plot(times, volts, '--',label=f'V raw direct',color='tab:green') # type: ignore
+                    axs[sim_ch.get_id()].plot(times, volts, '--',label=f'V sim direct',color='tab:green') # type: ignore
                 else:
-                    axs[sim_ch.get_id()].plot(times, volts, '--',label=f'V raw reflected',color='tab:red') # type: ignore
+                    axs[sim_ch.get_id()].plot(times, volts, '--',label=f'V sim reflected',color='tab:red') # type: ignore
 
         # Note, for station and sim station to line-up set the pre_trigger_time to 0 ns.
 
