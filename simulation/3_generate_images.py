@@ -13,6 +13,7 @@ for iE, event in enumerate(event_reader.run()):
         stations_num = len(stations)
         channels = list(station.iter_channels())
         channels_num = len(channels)
+
         # a fig and axes for our waveforms
         fig, axs = plt.subplots(stations_num*channels_num, 1, figsize=(5,20)) # subplots will scale with num of total channels
 
@@ -30,8 +31,13 @@ for iE, event in enumerate(event_reader.run()):
             for sim_ch in sim_station.iter_channels():
                 volts = sim_ch.get_trace()
                 times = sim_ch.get_times()
-                axs[sim_ch.get_id()].plot(times, volts, '--',label='V raw') # type: ignore
-    
+                if sim_ch.get_ray_tracing_solution_id() == 0: # If else check to add direct and reflected traces.
+                    axs[sim_ch.get_id()].plot(times, volts, '--',label=f'V raw direct',color='tab:green') # type: ignore
+                else:
+                    axs[sim_ch.get_id()].plot(times, volts, '--',label=f'V raw reflected',color='tab:red') # type: ignore
+
+        # Note, for station and sim station to line-up set the pre_trigger_time to 0 ns.
+
         for ax in axs:
             ax.set_xlabel("Time [ns]")
             ax.set_ylabel("Voltage [V]")
