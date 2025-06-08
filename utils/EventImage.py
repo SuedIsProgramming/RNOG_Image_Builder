@@ -2,9 +2,25 @@ import NuRadioReco.modules.io.eventReader
 from matplotlib import pyplot as plt
 import numpy as np
 
-def bin_hilbert(nbins,bin_method):
-    # Stub that will eventually return a binned hilbert envelope
-    return 0
+def bin(voltage,time,nbins,bin_method='mean'):
+    total_time = time[-1] - time[0]
+    bin_width = total_time * nbins
+    bin_edges = np.arange(time[0],time[-1] + bin_width, bin_width)
+    #bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2 Is there any use of having the centers?
+
+    bin_indices = np.digitize(time, bin_edges)
+
+    bin_voltage = np.zeros(len(bin_edges) - 1)
+
+    for i in range(1, len(bin_edges)):
+        voltages_in_bin = voltage[bin_indices == i]
+        if voltages_in_bin.size > 0:
+            if bin_method == 'max':
+                bin_voltage[i - 1] = np.max(voltages_in_bin)
+            elif bin_method == 'mean':
+                bin_voltage[i - 1] = np.mean(voltages_in_bin)
+
+    return bin_voltage, (time[0],time[-1])
 
 class EventImage:
     def __init__(self,nur_file,nbins):
@@ -20,14 +36,15 @@ class EventImage:
         else:
             raise ValueError("Detector object is None. Cannot access '_channels' or '_stations'.")
         self.nrows = nchannels * nstations # Number of rows will be the total number of channels for all stations
-        self.ncols = nbins # Number of columns is the number of bins
+        self.ncols = 0 # Will have to consider earliest time vs latest time for full width.
 
         for iE, event in enumerate(event_reader.run()):
             event_arr = np.zeros((self.nrows,self.ncols)) # Initialize an empty matrix
             for iStation, station in enumerate(event.get_stations()):
                 for ch in station.iter_channels():
-                    volts = ch.get_trace()
+                    volts_hilb = ch.get_hilbert_envelope()
                     times = ch.get_times()
+                    
 
 # For debugging
 eimg = EventImage('/data/condor_shared/users/ssued/RNOG_Image_Builder/simulation/output.nur',24)
