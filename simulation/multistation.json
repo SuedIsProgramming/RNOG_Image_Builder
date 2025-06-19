@@ -1,5 +1,4 @@
 {
-    "_default": {},
     "channels": {
         "1": {
             "adc_id": null,
@@ -111,7 +110,7 @@
         }
     },
     "comment": {
-        "1": "a surface station with 4 downward facing LPDAs and 4 dipoles with 1GHz sampling, i.e., the bandwidth is 0-500MHz"
+        "1": "4 surface stations with 4 downward facing LPDAs and 4 dipoles with 1GHz sampling, i.e., the bandwidth is 0-500MHz"
     },
     "positions": {},
     "stations": {
@@ -121,8 +120,8 @@
             "board_number": 203,
             "commission_time": "{TinyDate}:2017-11-04T00:00:00",
             "decommission_time": "{TinyDate}:2038-01-01T00:00:00",
-            "pos_altitude": 0,
-            "pos_easting": -100,
+            "pos_altitude": -3.27555,
+            "pos_easting": -500,
             "pos_northing": 0,
             "pos_measurement_time": null,
             "pos_position": "SP1",
@@ -132,23 +131,23 @@
             "station_type": null
         },
         "2":{
-            "pos_altitude": 0,
-            "pos_easting": 100,
+            "pos_altitude": -3.27555,
+            "pos_easting": 500,
             "pos_northing": 0,
             "reference_station":101,
             "station_id":102
         },
         "3":{
-            "pos_altitude": 0,
+            "pos_altitude": -3.27555,
             "pos_easting": 0,
-            "pos_northing": -100,
+            "pos_northing": -500,
             "reference_station":101,
             "station_id":103
         },
         "4":{
-            "pos_altitude": 0,
+            "pos_altitude": -3.27555,
             "pos_easting": 0,
-            "pos_northing": 100,
+            "pos_northing": 500,
             "reference_station":101,
             "station_id":104
         }

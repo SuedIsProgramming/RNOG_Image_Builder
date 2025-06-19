@@ -23,12 +23,13 @@ def bin(voltage,time,nbins,bin_method='mean'):
     return bin_voltage, (time[0],time[-1])
 
 class EventImage:
-    def __init__(self,nur_file,nbins):
+    def __init__(self,nur_file,nbins=24,tot_time=6000):
         self.nur_file = nur_file
         self.nbins = nbins
+        self.tot_time = tot_time 
 
         event_reader = NuRadioReco.modules.io.eventReader.eventReader()
-        event_reader.begin(nur_file)
+        event_reader.begin(nur_file, read_detector=True)
         det = event_reader.get_detector() # Obtain detector description from .nur file
         if det is not None:
             nchannels = len(det._channels)
@@ -36,14 +37,15 @@ class EventImage:
         else:
             raise ValueError("Detector object is None. Cannot access '_channels' or '_stations'.")
         self.nrows = nchannels * nstations # Number of rows will be the total number of channels for all stations
-        self.ncols = 0 # Will have to consider earliest time vs latest time for full width.
+        self.ncols = nbins
+        self.bin_time = tot_time / nbins
 
         for iE, event in enumerate(event_reader.run()):
             event_arr = np.zeros((self.nrows,self.ncols)) # Initialize an empty matrix
             for iStation, station in enumerate(event.get_stations()):
-                for ch in station.iter_channels():
-                    volts_hilb = ch.get_hilbert_envelope()
-                    times = ch.get_times()
+                for iChannel, channel in enumerate(station.iter_channels()):
+                    volts_hilb = channel.get_hilbert_envelope()
+                    times = channel.get_times()
                     
 
 # For debugging
