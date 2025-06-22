@@ -22,7 +22,7 @@ for iE, event in enumerate(event_reader.run()):
         for ch in station.iter_channels():
             volts = ch.get_trace()
             times = ch.get_times()
-            tot_time = times[-1] - times[0]
+            tot_time = (times[-1] - times[0]) + 1 # Have to add one ns because first element starts at 1 ns.
             tot_time_box = AnchoredText(f'$t_{{tot}}:$ {int(tot_time)} ns',loc=1)
             axs[ch.get_id()].add_artist(tot_time_box) # Add total time of trace (Only calculated for true V, but should be the same regardless)
             axs[ch.get_id()].plot(times, volts, label='V') # type: ignore
@@ -45,8 +45,9 @@ for iE, event in enumerate(event_reader.run()):
         for ax in axs:
             ax.set_xlabel("Time [ns]")
             ax.set_ylabel("Voltage [V]")
-            ax.legend()
+            ax.legend(loc=4)
 
         plt.tight_layout()
 
+        print(f'Saving trace for event {iE}')
         fig.savefig(f"traces_{iE}.png") # save the traces
