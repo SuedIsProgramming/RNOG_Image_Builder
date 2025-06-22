@@ -37,7 +37,7 @@ class mySimulation(simulation.simulation):
         highLowThreshold.run(evt, station, det,
                                     threshold_high=4 * self._Vrms,
                                     threshold_low=-4 * self._Vrms,
-                                    triggered_channels=[0, 1, 2, 3],  # select the LPDA channels
+                                    triggered_channels=None,  # select the LPDA channels | Santi: Will trigger for all channels.
                                     number_concidences=2,  # 2/4 majority logic
                                     trigger_name='LPDA_2of4_4.1sigma',
                                     set_not_triggered=(not station.has_triggered("simple_threshold")))  # calculate more time consuming ARIANNA trigger only if station passes simple trigger
