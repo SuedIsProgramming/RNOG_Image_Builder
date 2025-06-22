@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 import json
 
-def bin(voltage,time,nbins,bin_method='mean'):
+def _bin(voltage,time,nbins,bin_method='mean'):
     total_time = time[-1] - time[0]
     bin_width = total_time * nbins
     bin_edges = np.arange(time[0],time[-1] + bin_width, bin_width)
@@ -23,6 +23,8 @@ def bin(voltage,time,nbins,bin_method='mean'):
 
     return bin_voltage, (time[0],time[-1])
 
+
+
 class EventImage:
     def __init__(self,nur_file,nbins=24,tot_time=6000):
         self.nur_file = nur_file
@@ -36,7 +38,7 @@ class EventImage:
             if det is not None:
                 self.nchannels = len(det._channels)
                 self.nstations = len(det._stations)
-                self.nrows = self.nchannels * self.nstations # Number of rows will be the total number of channels for all stations
+                # self.adc_n_samples = ? Should figure out if they ever fix this.
             else:
                 raise ValueError("Detector object is None. Cannot access '_channels' or '_stations'.")
         except Exception as e: # If an issue occurs, it will then simply try to read json.
@@ -45,8 +47,9 @@ class EventImage:
                 det = json.load(f)
                 self.nchannels = len(det['channels'])
                 self.nstations = len(det['stations'])
-                self.nrows = self.nchannels * self.nstations
+                self.adc_n_samples = det['channels']['1']['adc_n_samples'] # Right now using the same adc_n_samples for each channel.
 
+        self.nrows = self.nchannels * self.nstations # Number of rows will be the total number of channels for all stations
         self.ncols = nbins
         self.bin_time = tot_time / nbins
         for iE, event in enumerate(event_reader.run()):
@@ -58,4 +61,5 @@ class EventImage:
 
 
 # For debugging
-eimg = EventImage('/data/condor_shared/users/ssued/RNOG_Image_Builder/simulation/output.nur',24)
+eimg_test = EventImage('/data/condor_shared/users/ssued/RNOG_Image_Builder/simulation/output.nur',24)
+print(eimg_test.adc_n_samples)
