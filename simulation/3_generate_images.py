@@ -38,7 +38,7 @@ for iE, event in enumerate(event_reader.run()):
                 if sim_ch.get_ray_tracing_solution_id() == 0: # If else check to add direct and reflected traces.
                     axs[sim_ch.get_id()].plot(times, volts, '--',label=f'Vsim direct',color='tab:green') # type: ignore
                 else:
-                    axs[sim_ch.get_id()].plot(times, volts, '--',label=f'Vsim reflected$ {tot_time:.4f} ns',color='tab:red') # type: ignore
+                    axs[sim_ch.get_id()].plot(times, volts, '--',label=f'Vsim reflected',color='tab:red') # type: ignore
 
         # Note, for station and sim station to line-up set the pre_trigger_time to 0 ns.
 
