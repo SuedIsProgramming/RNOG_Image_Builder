@@ -4,3 +4,5 @@ venv
 *.nur
 *log.ipynb
 test.py
+debugging.py
+simulation/debugging.py
