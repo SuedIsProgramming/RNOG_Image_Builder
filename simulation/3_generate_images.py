@@ -8,6 +8,7 @@ file = 'output.nur'
 event_reader.begin(file)
 for iE, event in enumerate(event_reader.run()):
     primary = event.get_primary()
+    iP = primary.get_id()
 
     for iStation, station in enumerate(event.get_stations()):
         stations = list(event.get_stations())
@@ -26,7 +27,7 @@ for iE, event in enumerate(event_reader.run()):
             tot_time_box = AnchoredText(f'$t_{{tot}}:$ {int(tot_time)} ns',loc=1)
             axs[ch.get_id()].add_artist(tot_time_box) # Add total time of trace (Only calculated for true V, but should be the same regardless)
             axs[ch.get_id()].plot(times, volts, label='V') # type: ignore
-            axs[ch.get_id()].set_title(f"Event number {iE} | Station {station.get_id()}, Channel {ch.get_id()}") # type: ignore
+            axs[ch.get_id()].set_title(f"Particle number {iP} | Station {station.get_id()}, Channel {ch.get_id()}") # type: ignore
         
         # this loops through *MC truth* waveforms (before noise was added)
         # this may prove useful at some point
@@ -49,5 +50,7 @@ for iE, event in enumerate(event_reader.run()):
 
         plt.tight_layout()
 
-        print(f'Saving trace for event {iE}')
-        fig.savefig(f"traces_{iE}.png") # save the traces
+        print(f'Saving trace for particle {iP} fields, detected at Station {station.get_id()}')
+        fig.savefig(f"particle:{iP}_station:{station.get_id()}.png") # save the traces
+        plt.close(fig)
+
