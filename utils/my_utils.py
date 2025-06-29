@@ -1,4 +1,6 @@
 import NuRadioReco.modules.io.eventReader
+import os
+import inspect
 
 def get_unique_events(fPath):
     """
@@ -46,3 +48,15 @@ def get_unique_events(fPath):
             first_event.set_station(event.get_station())
 
     return events_unique
+
+def get_rel_dir():
+    """
+    Returns the relative path from the current working directory to the directory containing the calling script.
+    """
+    # Get the filename of the caller
+    caller_frame = inspect.stack()[1]
+    caller_file = caller_frame.filename
+    abs_file_path = os.path.abspath(caller_file)
+    dir_name = os.path.dirname(abs_file_path)
+    rel_path = os.path.relpath(dir_name, os.getcwd())
+    return rel_path
