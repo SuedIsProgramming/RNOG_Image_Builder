@@ -1,6 +1,5 @@
 from utils.my_utils import get_unique_events, get_rel_dir
 from matplotlib import pyplot as plt
-from typing import List
 
 #plt.style.use('dark_background')
 
