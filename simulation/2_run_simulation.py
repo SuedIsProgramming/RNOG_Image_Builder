@@ -6,6 +6,7 @@ import NuRadioReco.modules.trigger.simpleThreshold
 import NuRadioReco.modules.channelBandPassFilter
 from NuRadioReco.utilities import units
 from NuRadioMC.simulation import simulation
+from utils.my_utils import get_rel_dir
 
 # Setup logging
 from NuRadioReco.utilities.logging import _setup_logger
@@ -16,6 +17,7 @@ simpleThreshold = NuRadioReco.modules.trigger.simpleThreshold.triggerSimulator()
 highLowThreshold = NuRadioReco.modules.trigger.highLowThreshold.triggerSimulator()
 channelBandPassFilter = NuRadioReco.modules.channelBandPassFilter.channelBandPassFilter()
 
+rel_dir = get_rel_dir() 
 
 class mySimulation(simulation.simulation):
 
@@ -56,10 +58,10 @@ class mySimulation(simulation.simulation):
 # args = parser.parse_args()
 
 if __name__ == "__main__":
-    sim = mySimulation(inputfilename="1e19_n1e3.hdf5",
-                                outputfilename="output.hdf5",
-                                detectorfile="multistation.json",
-                                outputfilenameNuRadioReco="output.nur",
-                                config_file="config.yaml",
+    sim = mySimulation(inputfilename=f"{rel_dir}/1e19_n1e3.hdf5",
+                                outputfilename=f"{rel_dir}/output.hdf5",
+                                detectorfile=f"{rel_dir}/multistation.json",
+                                outputfilenameNuRadioReco=f"{rel_dir}/output.nur",
+                                config_file=f"{rel_dir}/config.yaml",
                                 file_overwrite=True)
     sim.run()

@@ -1,6 +1,9 @@
 from __future__ import absolute_import, division, print_function
 from NuRadioReco.utilities import units
 from NuRadioMC.EvtGen.generator import generate_eventlist_cylinder
+from utils.my_utils import get_rel_dir
+
+rel_dir = get_rel_dir() 
 
 # Setup logging
 from NuRadioReco.utilities.logging import _setup_logger
@@ -14,4 +17,4 @@ volume = {
 'fiducial_rmax': 1 * units.km}
 
 # generate one event list at 1e19 eV with 100 neutrinos
-generate_eventlist_cylinder('1e19_n1e3.hdf5', 1e2, 1e19 * units.eV, 1e19 * units.eV, volume)
+generate_eventlist_cylinder(f'{rel_dir}/1e19_n1e3.hdf5', 1e2, 1e19 * units.eV, 1e19 * units.eV, volume)
