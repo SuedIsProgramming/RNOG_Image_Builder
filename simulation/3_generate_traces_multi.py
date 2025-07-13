@@ -22,9 +22,16 @@ for iE, event in enumerate(events_unique):
         axs = [axs]
 
     ax_idx = 0
+    
+    max_volt = max( 
+        max(channel.get_hilbert_envelope())
+        for station in stations
+        for channel in station.iter_channels()
+    )
+
     for iStation, station in enumerate(stations):
         for ch in station.iter_channels():
-            volts = ch.get_trace()
+            volts = ch.get_hilbert_envelope()
             times = ch.get_times()
             tot_time = int(times[-1] - times[0]) + 1
             axs[ax_idx].plot(times, volts, label=f'Station {station.get_id()} Channel {ch.get_id()}', linewidth=1.5) # type:ignore
@@ -33,6 +40,7 @@ for iE, event in enumerate(events_unique):
                 fontsize=11, fontweight='bold'
             )
             axs[ax_idx].set_ylabel("Voltage [V]", fontsize=10) # type:ignore
+            axs[ax_idx].set_ylim(0, max_volt) # type:ignore
             axs[ax_idx].legend(loc=4, fontsize=9) # type:ignore
             axs[ax_idx].grid(True, which='both', linestyle='--', linewidth=0.7, alpha=0.7) # type:ignore
             ax_idx += 1
@@ -43,9 +51,12 @@ for iE, event in enumerate(events_unique):
         ax.set_facecolor('#f7f7f7') # type:ignore
 
     station_ids = [station.get_id() for station in stations]
-    print(f'Saving trace for particle {event.get_id()}, detected at Stations: {station_ids}')
+
+    fpath = f'images_and_traces/traces_particle_{event.get_id()}_detected_at_{stations_num}.png'
+
+    print(f'Saving {fpath}...')
     fig.suptitle(f"Event {event.get_id()} | Detected at {stations_num} Stations", fontsize=14, fontweight='bold')
-    fig.savefig(f"{rel_dir}/particle_{event.get_id()}_detected_at_{stations_num}_stations.png", dpi=150)
+    fig.savefig(fpath, dpi=150)
     plt.close(fig)
 
 ################################## OLD ###################################################
