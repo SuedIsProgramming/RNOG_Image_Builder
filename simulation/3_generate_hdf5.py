@@ -1,6 +1,6 @@
 """
-This script generates and saves event images for simulated particles detected by a multi-station detector array. The image consists of a 2d matrix with channels on the vertical axis
-and binned time on the horizontal axis.
+This script generates and saves event images for simulated particles detected by a multi-station detector array to a hdf5 file. The image consists of a 2d matrix with channels on the vertical axis
+and binned time on the horizontal axis. Each image will be saved alongside a target label which will be used for machine learning purposes.
 Workflow:
 - Loads unique events from a .nur file and detector configuration from a JSON file.
 - Extracts station and channel information from the configuration.
@@ -8,8 +8,9 @@ Workflow:
     - Aligns time arrays for all channels to the earliest time in the event.
     - Bins Hilbert envelope voltage data for each channel into time bins.
     - Constructs a 2D image array representing voltage vs. time for all channels and stations.
-    - Visualizes the image using matplotlib, with axes labeled for time, channel, and station.
-    - Saves the resulting image as a PNG file.
+    - Obtains label value.
+    - Saves image and label value to its corresponding event group in the .hdf5 file.
+    
 Key Parameters:
 - TOT_TIME: Total time window (ns) for all traces for binning.
 - N_BINS: Number of time bins.
@@ -45,7 +46,7 @@ N_BINS = 1024 # Try to keep above this number
 BIN_MODE = 'MEAN' # Can choose from MEAN, MAX
 
 json_file = f'{rel_dir}/multistation.json' # json file with detector info
-HDF5_path = 'album.hdf5'
+HDF5_path = 'album/album.hdf5'
 
 with open(json_file, 'r') as f:
     det = json.load(f) # Load detector
@@ -101,15 +102,15 @@ for iEvent, event in enumerate(events_unique):
     vertex = next(event.get_particles()).get_parameter(parameters.particleParameters.vertex)
 
     # Save label + image to hdf5
-    with h5py.File(f'albums/{HDF5_path}', 'a') as file:
+    with h5py.File(HDF5_path, 'a') as file:
         if len(file.keys()) != 0:
             highest_event_number = max(int(key[5:]) for key in file.keys())
-            print(f'Saving event {highest_event_number + 1} to albums/{HDF5_path}')
-            event = file.create_group(f'event{highest_event_number + 1}')
+            print(f'Saving event {highest_event_number + 1} to {HDF5_path}')
+            event = file.create_group(f'event{highest_event_number + 1}') # Increase group index everytime we save to avoid conflicts.
             event.create_dataset("image",data=image)
             event.create_dataset("label",data=vertex)
         else:
-            print(f'Saving event 0 to albums/{HDF5_path}')
+            print(f'Saving event 0 to {HDF5_path}')
             event = file.create_group('event0')
             event.create_dataset("image",data=image)
             event.create_dataset("label",data=vertex)
