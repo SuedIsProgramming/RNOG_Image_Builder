@@ -7,3 +7,5 @@ test.py
 simulation/debugging.ipynb
 __pycache__/
 images_and_traces/
+albums/
+old/

@@ -28,13 +28,14 @@ Note:
 - Assumes all stations have the same number of channels.
 - Uses Hilbert envelope voltage data for visualization.
 """
-from utils.my_utils import get_unique_events, get_rel_dir
+from utils.my_utils import get_unique_events, get_rel_dir, find_max_file_index
 from NuRadioReco.framework import parameters
 from matplotlib import pyplot as plt
 import time
 import numpy as np
 import h5py
 import json
+import os
 
 print('Beginning step 3')
 
@@ -46,7 +47,10 @@ N_BINS = 1024 # Try to keep above this number
 BIN_MODE = 'MEAN' # Can choose from MEAN, MAX
 
 json_file = f'{rel_dir}/multistation.json' # json file with detector info
-HDF5_path = 'album/album.hdf5'
+albums_path = 'albums'
+
+max_index = find_max_file_index(albums_path) # Will find the maximum mini-album index to avoid overwriting
+hdf5_path = f'{albums_path}/mini-album{max_index+1}.hdf5' # Save a new album
 
 with open(json_file, 'r') as f:
     det = json.load(f) # Load detector
@@ -102,18 +106,11 @@ for iEvent, event in enumerate(events_unique):
     vertex = next(event.get_particles()).get_parameter(parameters.particleParameters.vertex)
 
     # Save label + image to hdf5
-    with h5py.File(HDF5_path, 'a') as file:
-        if len(file.keys()) != 0:
-            highest_event_number = max(int(key[5:]) for key in file.keys())
-            print(f'Saving event {highest_event_number + 1} to {HDF5_path}')
-            event = file.create_group(f'event{highest_event_number + 1}') # Increase group index everytime we save to avoid conflicts.
-            event.create_dataset("image",data=image)
-            event.create_dataset("label",data=vertex)
-        else:
-            print(f'Saving event 0 to {HDF5_path}')
-            event = file.create_group('event0')
-            event.create_dataset("image",data=image)
-            event.create_dataset("label",data=vertex)
+    with h5py.File(hdf5_path, 'a') as file:
+        print(f'Saving event {iEvent + 1} to {hdf5_path}...')
+        event = file.create_group(f'event{iEvent + 1}')
+        event.create_dataset("image",data=image)
+        event.create_dataset("label",data=vertex)
 
 # * Events only include detected stations in get_stations(), thus, when looping through them it is important to keep this in mind. Looping through them will return the detected stations
 # without care for their ID.

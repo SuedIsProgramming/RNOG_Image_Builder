@@ -1,6 +1,7 @@
 import NuRadioReco.modules.io.eventReader
-import os
 import inspect
+import re
+import os
 
 def get_unique_events(fPath):
     """
@@ -43,6 +44,7 @@ def get_unique_events(fPath):
                 events_unique.append(first_event)
             iFirst = event.get_id()
             first_event = event
+            
         # Add stations from the same primary to the current first event
         if event is not first_event:    
             first_event.set_station(event.get_station())
@@ -60,3 +62,40 @@ def get_rel_dir():
     dir_name = os.path.dirname(abs_file_path)
     rel_path = os.path.relpath(dir_name, os.getcwd())
     return rel_path
+
+def find_max_file_index(path):
+    """
+    Finds the maximum numeric index from all filenames in the given directory.
+    Returns the highest number found across all filenames, or 0 if no numbers exist.
+    """
+    try:
+        files = os.listdir(path)
+    except (FileNotFoundError, PermissionError):
+        return 0
+    
+    max_index = 0
+    
+    for filename in files:
+        # Extract all digits from the filename (without path/extension)
+        name = os.path.splitext(filename)[0]
+        digits = re.findall(r'\d+', name)  # Find sequences of digits, not individual digits
+        
+        # Convert each digit sequence to int and find the max
+        if digits:
+            file_max = max(int(d) for d in digits)
+            max_index = max(max_index, file_max)
+    
+    return max_index
+
+def find_max_hdf5_index(hdf5_file):
+    
+    max_index = 0
+
+    for keys in hdf5_file.keys():
+        digits = re.findall(r'\d+', keys)
+
+        if digits:
+            file_max = max(int(d) for d in digits)
+            max_index = max(max_index, file_max)
+
+    return max_index
