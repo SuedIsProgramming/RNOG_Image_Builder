@@ -35,7 +35,7 @@ def get_unique_events(fPath):
     for iE, event in enumerate(event_reader.run()):
         primary = event.get_primary()
         iP = primary.get_id()
-        event.set_id(iP)
+        event.set_id(iP) # Sets the id of the event to the id of the particle
 
         # Start a new unique first event if the primary ID changes
         if iFirst != event.get_id():

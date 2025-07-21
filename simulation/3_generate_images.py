@@ -44,19 +44,17 @@ BIN_MODE = 'MEAN' # Can choose from MEAN, MAX
 json_file = f'{rel_dir}/multistation.json' # json file with detector info
 
 with open(json_file, 'r') as f:
-            print(f'Issue encountered reading the .nur file, will read from {json_file} instead')
-            with open(json_file, 'r') as f:
-                det = json.load(f) # Load detector
-                N_CHANNELS = len(det['channels']) # Read number of channels (Assumes all stations have the same number of channels)
-                N_STATIONS = len(det['stations']) # Assumes stations are all the same.
-                STATION_IDS = []
-                CHANNEL_IDS = []
+    det = json.load(f) # Load detector
+    N_CHANNELS = len(det['channels']) # Read number of channels (Assumes all stations have the same number of channels)
+    N_STATIONS = len(det['stations']) # Assumes stations are all the same.
+    STATION_IDS = []
+    CHANNEL_IDS = []
 
-                # Populate station and channel ids for future plotting and indexing
-                for st in range(1,N_STATIONS+1):
-                    STATION_IDS.append(det['stations'][f'{st}']['station_id'])
-                    for key in det['channels'].keys():
-                        CHANNEL_IDS.append(key)
+    # Populate station and channel ids for future plotting and indexing
+    for st in range(1,N_STATIONS+1):
+        STATION_IDS.append(det['stations'][f'{st}']['station_id'])
+        for key in det['channels'].keys():
+            CHANNEL_IDS.append(key)
 
 for event in events_unique:
     stations = list(event.get_stations())
