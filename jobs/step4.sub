@@ -1,0 +1,9 @@
+executable = /data/condor_shared/users/ssued/RNOG_Image_Builder/jobs/jobs_simulation/4_merge_mini-albums.py
+
+#log = /data/condor_shared/users/ssued/RNOG_Image_Builder/jobs/jobs_logs/job.log
+#output = /data/condor_shared/users/ssued/RNOG_Image_Builder/jobs/jobs_logs/stepFour_$(sim_num).$(Cluster).out
+#error = /data/condor_shared/users/ssued/RNOG_Image_Builder/jobs/jobs_logs/stepFour_$(sim_num).$(Cluster).err
+request_cpus = 1
+request_memory = 400MB
+
+queue

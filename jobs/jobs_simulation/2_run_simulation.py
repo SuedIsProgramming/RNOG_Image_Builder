@@ -1,3 +1,5 @@
+#!/data/condor_shared/users/ssued/RNOG_Image_Builder/venv/bin/python3
+
 from __future__ import absolute_import, division, print_function
 #import argparse
 # import detector simulation modules
@@ -6,7 +8,19 @@ import NuRadioReco.modules.trigger.simpleThreshold
 import NuRadioReco.modules.channelBandPassFilter
 from NuRadioReco.utilities import units
 from NuRadioMC.simulation import simulation
-from utils.my_utils import get_rel_dir
+import os
+
+root_dir = os.getcwd() # Should be main directory: RNOG_Image_Builder
+
+import argparse # Argument parser required to add a simulation number suffix to the file name
+
+parser = argparse.ArgumentParser(description='Argument for file differentiation')
+parser.add_argument('sim_num', type=str,
+                    help='Number of simulation')
+
+args = parser.parse_args()
+
+sim_num = args.sim_num
 
 # Setup logging
 from NuRadioReco.utilities.logging import _setup_logger
@@ -16,8 +30,6 @@ logger = _setup_logger(name="")
 simpleThreshold = NuRadioReco.modules.trigger.simpleThreshold.triggerSimulator()
 highLowThreshold = NuRadioReco.modules.trigger.highLowThreshold.triggerSimulator()
 channelBandPassFilter = NuRadioReco.modules.channelBandPassFilter.channelBandPassFilter()
-
-rel_dir = get_rel_dir() 
 
 class mySimulation(simulation.simulation):
 
@@ -58,10 +70,10 @@ class mySimulation(simulation.simulation):
 # args = parser.parse_args()
 
 if __name__ == "__main__":
-    sim = mySimulation(inputfilename=f"{rel_dir}/1e19_n1e3.hdf5",
-                                outputfilename=f"{rel_dir}/output.hdf5",
-                                detectorfile=f"{rel_dir}/multistation.json",
-                                outputfilenameNuRadioReco=f"{rel_dir}/output.nur",
-                                config_file=f"{rel_dir}/config.yaml",
+    sim = mySimulation(inputfilename=f"{root_dir}/jobs/jobs_simulation_data/1e19_n1e3_{sim_num}.hdf5",
+                                outputfilename=f"{root_dir}/jobs/jobs_simulation_data/output_{sim_num}.hdf5",
+                                detectorfile=f"{root_dir}/jobs/jobs_simulation_data/multistation.json",
+                                outputfilenameNuRadioReco=f"{root_dir}/jobs/jobs_simulation_data/output_{sim_num}.nur",
+                                config_file=f"{root_dir}/jobs/jobs_simulation_data/config.yaml",
                                 file_overwrite=True)
     sim.run()

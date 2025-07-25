@@ -1,0 +1,83 @@
+CONFIG jobs/dagman.config 
+
+JOB stepOne_0 /data/condor_shared/users/ssued/RNOG_Image_Builder/jobs/step1.sub 
+VARS stepOne_0 sim_num="0" 
+JOB stepTwo_0 /data/condor_shared/users/ssued/RNOG_Image_Builder/jobs/step2.sub 
+VARS stepTwo_0 sim_num="0" 
+JOB stepThree_0 /data/condor_shared/users/ssued/RNOG_Image_Builder/jobs/step3.sub 
+VARS stepThree_0 sim_num="0" 
+
+PARENT stepOne_0 CHILD stepTwo_0
+PARENT stepTwo_0 CHILD stepThree_0
+
+JOB stepOne_1 /data/condor_shared/users/ssued/RNOG_Image_Builder/jobs/step1.sub 
+VARS stepOne_1 sim_num="1" 
+JOB stepTwo_1 /data/condor_shared/users/ssued/RNOG_Image_Builder/jobs/step2.sub 
+VARS stepTwo_1 sim_num="1" 
+JOB stepThree_1 /data/condor_shared/users/ssued/RNOG_Image_Builder/jobs/step3.sub 
+VARS stepThree_1 sim_num="1" 
+
+PARENT stepOne_1 CHILD stepTwo_1 
+PARENT stepTwo_1 CHILD stepThree_1 
+
+JOB stepOne_2 /data/condor_shared/users/ssued/RNOG_Image_Builder/jobs/step1.sub 
+VARS stepOne_2 sim_num="2" 
+JOB stepTwo_2 /data/condor_shared/users/ssued/RNOG_Image_Builder/jobs/step2.sub 
+VARS stepTwo_2 sim_num="2" 
+JOB stepThree_2 /data/condor_shared/users/ssued/RNOG_Image_Builder/jobs/step3.sub 
+VARS stepThree_2 sim_num="2" 
+
+PARENT stepOne_2 CHILD stepTwo_2 
+PARENT stepTwo_2 CHILD stepThree_2 
+
+JOB stepOne_3 /data/condor_shared/users/ssued/RNOG_Image_Builder/jobs/step1.sub 
+VARS stepOne_3 sim_num="3" 
+JOB stepTwo_3 /data/condor_shared/users/ssued/RNOG_Image_Builder/jobs/step2.sub 
+VARS stepTwo_3 sim_num="3" 
+JOB stepThree_3 /data/condor_shared/users/ssued/RNOG_Image_Builder/jobs/step3.sub 
+VARS stepThree_3 sim_num="3" 
+
+PARENT stepOne_3 CHILD stepTwo_3 
+PARENT stepTwo_3 CHILD stepThree_3 
+
+JOB stepOne_4 /data/condor_shared/users/ssued/RNOG_Image_Builder/jobs/step1.sub 
+VARS stepOne_4 sim_num="4" 
+JOB stepTwo_4 /data/condor_shared/users/ssued/RNOG_Image_Builder/jobs/step2.sub 
+VARS stepTwo_4 sim_num="4" 
+JOB stepThree_4 /data/condor_shared/users/ssued/RNOG_Image_Builder/jobs/step3.sub 
+VARS stepThree_4 sim_num="4" 
+
+PARENT stepOne_4 CHILD stepTwo_4 
+PARENT stepTwo_4 CHILD stepThree_4 
+
+JOB stepOne_5 /data/condor_shared/users/ssued/RNOG_Image_Builder/jobs/step1.sub 
+VARS stepOne_5 sim_num="5" 
+JOB stepTwo_5 /data/condor_shared/users/ssued/RNOG_Image_Builder/jobs/step2.sub 
+VARS stepTwo_5 sim_num="5" 
+JOB stepThree_5 /data/condor_shared/users/ssued/RNOG_Image_Builder/jobs/step3.sub 
+VARS stepThree_5 sim_num="5" 
+
+PARENT stepOne_5 CHILD stepTwo_5 
+PARENT stepTwo_5 CHILD stepThree_5 
+
+JOB stepOne_6 /data/condor_shared/users/ssued/RNOG_Image_Builder/jobs/step1.sub 
+VARS stepOne_6 sim_num="6" 
+JOB stepTwo_6 /data/condor_shared/users/ssued/RNOG_Image_Builder/jobs/step2.sub 
+VARS stepTwo_6 sim_num="6" 
+JOB stepThree_6 /data/condor_shared/users/ssued/RNOG_Image_Builder/jobs/step3.sub 
+VARS stepThree_6 sim_num="6" 
+
+PARENT stepOne_6 CHILD stepTwo_6 
+PARENT stepTwo_6 CHILD stepThree_6 
+
+JOB stepOne_7 /data/condor_shared/users/ssued/RNOG_Image_Builder/jobs/step1.sub 
+VARS stepOne_7 sim_num="7" 
+JOB stepTwo_7 /data/condor_shared/users/ssued/RNOG_Image_Builder/jobs/step2.sub 
+VARS stepTwo_7 sim_num="7" 
+JOB stepThree_7 /data/condor_shared/users/ssued/RNOG_Image_Builder/jobs/step3.sub 
+VARS stepThree_7 sim_num="7" 
+
+PARENT stepOne_7 CHILD stepTwo_7
+PARENT stepTwo_7 CHILD stepThree_7
+
+FINAL stepFour /data/condor_shared/users/ssued/RNOG_Image_Builder/jobs/step4.sub

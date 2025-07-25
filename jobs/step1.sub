@@ -1,0 +1,10 @@
+executable = /data/condor_shared/users/ssued/RNOG_Image_Builder/jobs/jobs_simulation/1_generate_neutrinos.py
+arguments = $(sim_num)
+
+#log = /data/condor_shared/users/ssued/RNOG_Image_Builder/jobs/jobs_logs/job.log
+#output = /data/condor_shared/users/ssued/RNOG_Image_Builder/jobs/jobs_logs/stepOne_$(sim_num).$(Cluster).out
+#error = /data/condor_shared/users/ssued/RNOG_Image_Builder/jobs/jobs_logs/stepOne_$(sim_num).$(Cluster).err
+request_cpus = 1
+request_memory = 400MB
+
+queue

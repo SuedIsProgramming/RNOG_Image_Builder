@@ -1,3 +1,5 @@
+#!/data/condor_shared/users/ssued/RNOG_Image_Builder/venv/bin/python3
+
 """
 HDF5 Album Consolidation Script
 
@@ -23,13 +25,18 @@ Usage:
    Run this script from the main directory.
    The script will automatically process all HDF5 files and consolidate them.
 """
+import sys # Cannot escape this import :C
+
+sys.path.append('/data/condor_shared/users/ssued/RNOG_Image_Builder')
 
 from utils.my_utils import find_max_hdf5_index
 import h5py
 import os
 
+root_dir = os.getcwd() # Should be main directory: RNOG_Image_Builder
+
 # Configuration
-albums_path = 'albums'
+albums_path = '/data/i3store/users/ssued/albums'
 master_album_filename = 'album.hdf5'
 
 # Process each individual album file in the albums directory
@@ -65,3 +72,11 @@ for albums_filename in os.listdir(albums_path):
             print(f"Error deleting {source_album_path}: {e}")
 
 print("Album consolidation completed successfully!")
+
+# Remove left over .hdf5 .nur files from jobs_simulation_data
+
+for file in os.listdir(f'{root_dir}/jobs/jobs_simulation_data'):
+    if file.endswith('.hdf5') or file.endswith('.nur'):
+        file_path = os.path.join(f'{root_dir}/jobs/jobs_simulation_data', file)
+        os.remove(file_path)
+        print(f"Deleted: {file}")
