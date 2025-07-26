@@ -53,6 +53,8 @@ for albums_filename in os.listdir(albums_path):
         with h5py.File(source_album_path, 'r') as h5_source, \
             h5py.File(master_album_path, 'a') as h5_destination:
             
+            #print(f'Copying events from {h5_source} to {h5_destination}')
+
             # Find the current maximum event index in the master file
             # This ensures we continue numbering from where we left off
             max_index = find_max_hdf5_index(h5_destination)
@@ -67,11 +69,11 @@ for albums_filename in os.listdir(albums_path):
     
         try:
             os.remove(source_album_path)
-            print(f"Deleted: {source_album_path}")
+            #print(f"Deleted: {source_album_path}")
         except OSError as e:
-            print(f"Error deleting {source_album_path}: {e}")
+            #print(f"Error deleting {source_album_path}: {e}")
 
-print("Album consolidation completed successfully!")
+#print("Album consolidation completed successfully!")
 
 # Remove left over .hdf5 .nur files from jobs_simulation_data
 
@@ -79,4 +81,4 @@ for file in os.listdir(f'{root_dir}/jobs/jobs_simulation_data'):
     if file.endswith('.hdf5') or file.endswith('.nur'):
         file_path = os.path.join(f'{root_dir}/jobs/jobs_simulation_data', file)
         os.remove(file_path)
-        print(f"Deleted: {file}")
+        #print(f"Deleted: {file}")

@@ -66,8 +66,8 @@ BIN_MODE = 'MEAN' # Can choose from MEAN, MAX
 json_file = f'{root_dir}/jobs/jobs_simulation_data/multistation.json' # json file with detector info
 albums_path = '/data/i3store/users/ssued/albums'
 
-max_index = my_utils.find_max_file_index(albums_path) # Will find the maximum mini-album index to avoid overwriting
-hdf5_path = f'{albums_path}/mini-album{max_index+1}.hdf5' # Save a new album
+# max_index = my_utils.find_max_file_index(albums_path) Not required for jobs
+hdf5_path = f'{albums_path}/mini-album{sim_num}.hdf5' # Save a new album
 
 with open(json_file, 'r') as f:
     det = json.load(f) # Load detector
@@ -124,7 +124,7 @@ for iEvent, event in enumerate(events_unique):
 
     # Save label + image to hdf5
     with h5py.File(hdf5_path, 'a') as file:
-        print(f'Saving event {iEvent + 1} to {hdf5_path}...')
+        #print(f'Saving event {iEvent + 1} to {hdf5_path}...')
         event = file.create_group(f'event{iEvent + 1}')
         event.create_dataset("image",data=image)
         event.create_dataset("label",data=vertex)

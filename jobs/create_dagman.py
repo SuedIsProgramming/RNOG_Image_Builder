@@ -6,7 +6,10 @@ import os
 
 # This script creates a DAG file for the condor job scheduler. The DAG file is a text file that specifies the order in which jobs should be run.
 
-sim_num = 2**4 # Number of simulations to run 
+sim_num = 2**10 # Number of simulations to run 
+
+# 2^0=1, 2^1=2, 2^2=4, 2^3=8, 2^4=16, 2^5=32, 2^6=64, 2^7=128, 2^8=256, 2^9=512, 2^10=1024, 2^11=2048, 2^12=4096, 2^13=8192, 2^14=16384, 2^15=24576, 2^16=32768
+
 
 root_dir = os.getcwd() # Should be main directory: RNOG_Image_Builder
 
