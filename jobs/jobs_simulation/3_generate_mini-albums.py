@@ -59,7 +59,7 @@ sim_num = args.sim_num
 
 events_unique = my_utils.get_unique_events(f'{root_dir}/jobs/jobs_simulation_data/output_{sim_num}.nur') # Obtain only the unique events for each particle
 
-TOT_TIME = 6000
+TOT_TIME = 7000
 N_BINS = 1024 # Try to keep above this number
 BIN_MODE = 'MEAN' # Can choose from MEAN, MAX
 
