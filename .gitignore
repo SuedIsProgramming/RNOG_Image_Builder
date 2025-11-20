@@ -14,3 +14,8 @@ jobs_simulation_data/*.hdf5
 jobs_simulation_data/*.nur
 jobs_logs/
 dagman.dag.*
+*.log
+*.err
+*.out
+*.metrics
+dagman*.sub
