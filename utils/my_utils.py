@@ -3,6 +3,11 @@ import inspect
 import re
 import os
 
+def get_album_name():
+    album_name = 'RNO_album_11_03_2025_20k_unorm'
+
+    return album_name
+
 def get_unique_events(fPath):
     """
     Reads a NuRadioReco .nur file and returns a list of unique events, 

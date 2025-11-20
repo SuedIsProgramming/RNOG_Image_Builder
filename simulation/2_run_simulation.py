@@ -60,7 +60,7 @@ class mySimulation(simulation.simulation):
 if __name__ == "__main__":
     sim = mySimulation(inputfilename=f"{rel_dir}/1e19_n1e3.hdf5",
                                 outputfilename=f"{rel_dir}/output.hdf5",
-                                detectorfile=f"{rel_dir}/multistation.json",
+                                detectorfile=f"{rel_dir}/station.json",
                                 outputfilenameNuRadioReco=f"{rel_dir}/output.nur",
                                 config_file=f"{rel_dir}/config.yaml",
                                 file_overwrite=True)

@@ -31,21 +31,28 @@ import sys # Cannot escape this import :C
 
 sys.path.append('/data/condor_shared/users/ssued/RNOG_Image_Builder')
 
+import matplotlib
 from matplotlib import pyplot as plt
 from utils.my_utils import get_unique_events, get_rel_dir
 import numpy as np
 import json
+
+font = {'family' : 'sans-serif',
+        'weight' : 'normal',
+        'size'   : 22}
+
+matplotlib.rc('font', **font)
 
 print('Beginning step 3')
 
 rel_dir = get_rel_dir() # Obtain the relative directory path for relative file administration
 events_unique = get_unique_events(f'{rel_dir}/output.nur') # Obtain only the unique events for each particle
 
-TOT_TIME = 6000
-N_BINS = 1024 # Try to keep above this number
+TOT_TIME = 150
+N_BINS = 64 # Try to keep above this number
 BIN_MODE = 'MEAN' # Can choose from MEAN, MAX
 
-json_file = f'{rel_dir}/multistation.json' # json file with detector info
+json_file = f'{rel_dir}/station.json' # json file with detector info
 
 with open(json_file, 'r') as f:
     det = json.load(f) # Load detector
@@ -73,9 +80,19 @@ for event in events_unique:
         for channel in station.iter_channels()
     )
 
+    max_hilb = max( 
+        hilb_volt
+        for station in stations
+        for channel in station.iter_channels()
+        for hilb_volt in channel.get_hilbert_envelope()
+    )
+
     image = np.zeros((TOT_CHANNELS, N_BINS)) # Initialize empty image
-    
+
     time_edges = np.linspace(0, TOT_TIME, N_BINS + 1) # Setup edges of time bins
+
+    fig,ax = plt.subplots(4,1,figsize=(12,8))
+    ax = ax.flatten()
 
     # Main loop that assigns the trace from the array to bins on the matrix
     for iStation, station in enumerate(stations):
@@ -86,8 +103,29 @@ for event in events_unique:
             # Obtain trace data
             time_arr = np.array(channel.get_times())
             hilb_arr = np.array(channel.get_hilbert_envelope())
+            volt_arr = np.array(channel.get_trace())
             time_arr = time_arr - min_time
-            
+            ax[iChannel].tick_params(axis='y', labelsize=15)
+            if iChannel == 1:
+                ax[iChannel].set_ylabel('Voltage (V)') 
+            # if iChannel != 0:
+            #     ax[iChannel].set_yticklabels([])
+            if iChannel != 3:
+                ax[iChannel].set_xticklabels([])
+            if iChannel == 1:
+                ax[iChannel].plot(time_arr[time_arr < TOT_TIME],hilb_arr[time_arr < TOT_TIME], label='Hilbert Envelope')
+                ax[iChannel].plot(time_arr[time_arr < TOT_TIME],volt_arr[time_arr < TOT_TIME], label='Voltage Trace')
+            ax[iChannel].plot(time_arr[time_arr < TOT_TIME],hilb_arr[time_arr < TOT_TIME],color='tab:blue')
+            ax[iChannel].plot(time_arr[time_arr < TOT_TIME],volt_arr[time_arr < TOT_TIME],color='tab:orange')
+            # if iChannel == 0:
+            #     ax[iChannel].legend(loc=0,fontsize=15)
+            ax[iChannel].set_title(f'Channel {iChannel}',fontsize=22)
+            ax[iChannel].grid(True,alpha=0.5)
+            # ax[iChannel].set_ylabel('Voltage (V)')
+            ax[iChannel].set_ylim(-1.1*max_hilb,1.1*max_hilb)
+            if iChannel == 3:
+                ax[iChannel].set_xlabel('Time (ns)',fontsize=20)
+
             # Old code, will delete once Im sure new code works well
             # Loop through time array (TODO: As is, will continuously save over itself until time is greater than time edge for each time bin)
             # Want to make it save the mean. I believe right now it saves the right most time value for each time edge
@@ -96,7 +134,6 @@ for event in events_unique:
             #         if time < time_edge: # If time is smaller than time edge
             #             image[curr_tot_channel][iTime_edge] = hilb_arr[iTime] # Save the hilbert voltage at that time and continue with next time.
             #             break
-
             time_bin_indices = np.digitize(time_arr,time_edges) # Returns the bins where each time_arr index belongs to.
 
             binned_hilb = [hilb_arr[time_bin_indices == i] for i in range(1, len(time_edges))] # Returns hilbert arrays for each bin
@@ -112,25 +149,32 @@ for event in events_unique:
                 else:
                     raise ValueError(f"Unsupported BIN_MODE '{BIN_MODE}'. Only 'MEAN' and 'MAX' are supported.")
 
+    fig.legend(fontsize=15)
+    fig.tight_layout()
+    fpath = f'images_and_traces/trace_particle_{event.get_id()}_detected_at_{stations_num}_stations_mode_{BIN_MODE}.png'
+    print(f' Saving {fpath} ...')
+    fig.savefig(fpath, bbox_inches='tight')
+    plt.close(fig)
+
     # Plotting
-    fig, ax = plt.subplots(figsize=(20, 6))
+    fig, ax = plt.subplots(figsize=(12,8))
     im = ax.imshow(image, aspect='auto', interpolation='none')
     ax.set_xlabel(f'Time Bin (Each bin is {TOT_TIME / N_BINS:.2f} ns)')
     ax.set_ylabel('Channel')
     ax.set_yticks(np.arange(len(CHANNEL_IDS)))
     ax.set_yticklabels(CHANNEL_IDS)
-    ax_twin_x = ax.twiny()
-    ax_twin_x.set_xlim(ax.get_xlim())
-    ax_twin_x.set_xlabel('Time (ns)')
-    time_labels = np.linspace(0, TOT_TIME, num=5)
-    ax_twin_x.set_xticks(np.linspace(0, N_BINS, num=5))
-    ax_twin_x.set_xticklabels([f"{t:.1f}" for t in time_labels])
-    ax_twin_y = ax.twinx()
-    ax_twin_y.set_ylim(ax.get_ylim())
-    ax_twin_y.set_ylabel('Station ID')
-    ax_twin_y.set_yticks([i * N_CHANNELS + N_CHANNELS / 2 - 0.5 for i in range(N_STATIONS)])
-    ax_twin_y.set_yticklabels(STATION_IDS)
-    ax.set_title(f'Event Image for Simulated Particle {event.get_id()}')
+    # ax_twin_x = ax.twiny()
+    # ax_twin_x.set_xlim(ax.get_xlim())
+    # ax_twin_x.set_xlabel('Time (ns)')
+    # time_labels = np.linspace(0, TOT_TIME, num=5)
+    # ax_twin_x.set_xticks(np.linspace(0, N_BINS, num=5))
+    # ax_twin_x.set_xticklabels([f"{t:.1f}" for t in time_labels])
+    # ax_twin_y = ax.twinx()
+    # ax_twin_y.set_ylim(ax.get_ylim())
+    # ax_twin_y.set_ylabel('Station ID')
+    # ax_twin_y.set_yticks([i * N_CHANNELS + N_CHANNELS / 2 - 0.5 for i in range(N_STATIONS)])
+    # ax_twin_y.set_yticklabels(STATION_IDS)
+    # ax.set_title(f'Event Image for Simulated Particle {event.get_id()}')
     cbar = fig.colorbar(im, ax=ax, label='Voltage (V)')
     cbar.formatter.set_scientific(True)
     cbar.formatter.set_powerlimits((0, 0))
@@ -140,6 +184,7 @@ for event in events_unique:
         for iChannel in range(N_CHANNELS):
              ax.axhline(y=iStations*N_CHANNELS+iChannel-0.5, color='w', linewidth=1, xmin=0, xmax=1, alpha=0.5)
     ax.set_yticks(np.arange(image.shape[0]))
+    plt.tight_layout()
 
     # Saving
     fpath = f'images_and_traces/image_particle_{event.get_id()}_detected_at_{stations_num}_stations_mode_{BIN_MODE}.png'
@@ -147,6 +192,7 @@ for event in events_unique:
     print(f' Saving {fpath} ...')
     fig.savefig(fpath, bbox_inches='tight')
     plt.close(fig)
+
 
 # * Events only include detected stations in get_stations(), thus, when looping through them it is important to keep this in mind. Looping through them will return the detected stations
 # without care for their ID.

@@ -45,7 +45,7 @@ for albums_filename in os.listdir(albums_path):
         # 'a' mode: append/read-write access to master file (creates if doesn't exist)
         with h5py.File(source_album_path, 'r') as h5_source, \
             h5py.File(master_album_path, 'a') as h5_destination:
-            
+                
             # Find the current maximum event index in the master file
             # This ensures we continue numbering from where we left off
             max_index = find_max_hdf5_index(h5_destination)
