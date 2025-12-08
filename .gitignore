@@ -24,3 +24,4 @@ dagman*.sub
 experiments/
 wandb/
 *.txt
+/*.ipynb
