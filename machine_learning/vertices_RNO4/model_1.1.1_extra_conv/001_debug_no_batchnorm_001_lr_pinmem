@@ -1,0 +1,36 @@
+/data/condor_shared/users/ssued/mlvenv/lib/python3.10/site-packages/pydantic/_internal/_generate_schema.py:2249: UnsupportedFieldAttributeWarning: The 'repr' attribute with value False was provided to the `Field()` function, which has no effect in the context it was used. 'repr' is field-specific metadata, and can only be attached to a model field using `Annotated` metadata or by assignment. This may have happened because an `Annotated` type alias using the `type` statement was used, or if the `Field()` function was attached to a single member of a union type.
+  warnings.warn(
+/data/condor_shared/users/ssued/mlvenv/lib/python3.10/site-packages/pydantic/_internal/_generate_schema.py:2249: UnsupportedFieldAttributeWarning: The 'frozen' attribute with value True was provided to the `Field()` function, which has no effect in the context it was used. 'frozen' is field-specific metadata, and can only be attached to a model field using `Annotated` metadata or by assignment. This may have happened because an `Annotated` type alias using the `type` statement was used, or if the `Field()` function was attached to a single member of a union type.
+  warnings.warn(
+wandb: Currently logged in as: ssued (ssued-university-of-maryland) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: setting up run venm7z85
+wandb: Tracking run with wandb version 0.22.2
+wandb: Run data is saved locally in /data/condor_shared/users/ssued/machine_learning/vertices_RNO4/model_1.1.1_extra_conv/wandb/run-20251027_012211-venm7z85
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run exp_e100000000_bn128_tr269_te68_lfn-MSELoss_opt-Adam_hiddenu-20_lr-0.01_lReLU-0.01_extra_conv_layerNObatchnorm
+wandb: ⭐️ View project at https://wandb.ai/ssued-university-of-maryland/model_1.1.1_extra_conv
+wandb: 🚀 View run at https://wandb.ai/ssued-university-of-maryland/model_1.1.1_extra_conv/runs/venm7z85
+Current directory: /data/condor_shared/users/ssued/machine_learning/vertices_RNO4/model_1.1.1_extra_conv
+✅ Inside correct folder
+2.8.0+cu128
+cuda
+Train album size: 34337 | Test album size: 8585
+Number of train batches: 269 | Number of test batches: 68
+wandb: updating run metadata
+wandb: 
+wandb: Run history:
+wandb:       Epoch Time █▂▂▃▅▁▂▂
+wandb:        Test Loss █▁▆▅▅▃▂▂
+wandb:       Train Loss ▂▁█▁▁▁▁▁
+wandb: stop_file_exists ▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:       Epoch Time 44.38294
+wandb:        Test Loss 0.04717
+wandb:       Train Loss 0.04809
+wandb: stop_file_exists 0
+wandb: 
+wandb: 🚀 View run exp_e100000000_bn128_tr269_te68_lfn-MSELoss_opt-Adam_hiddenu-20_lr-0.01_lReLU-0.01_extra_conv_layerNObatchnorm at: https://wandb.ai/ssued-university-of-maryland/model_1.1.1_extra_conv/runs/venm7z85
+wandb: ⭐️ View project at: https://wandb.ai/ssued-university-of-maryland/model_1.1.1_extra_conv
+wandb: Synced 5 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20251027_012211-venm7z85/logs

@@ -19,3 +19,8 @@ dagman.dag.*
 *.out
 *.metrics
 dagman*.sub
+.vscode
+.ipynb*
+experiments/
+wandb/
+*.txt
