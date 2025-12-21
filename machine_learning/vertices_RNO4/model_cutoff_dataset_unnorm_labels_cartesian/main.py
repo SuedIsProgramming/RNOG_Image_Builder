@@ -9,7 +9,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 
 # Import all functions from utils_dir (handled by __init__.py)
 from utils_dir import *
-from utils_dir import model
+from RNOG_Image_Builder.machine_learning.utils_dir import models
 import time
 
 # Only function if current working directory is model dir:
@@ -87,7 +87,7 @@ test_data_loader = DataLoader(dataset = test_album,
 print(f'Number of train batches: {len(train_data_loader)} | Number of test batches: {len(test_data_loader)}')
 
 # Initialize model
-model = model.RNO_four_2_1_0_linear(input_shape=1,
+models = models.RNO_four_2_1_0_linear(input_shape=1,
                           hidden_units=HIDDEN_UNITS, 
                           output_shape=3,
                           normalize_inputs=NORMALIZE_INPUTS,
@@ -99,14 +99,14 @@ model = model.RNO_four_2_1_0_linear(input_shape=1,
                          )
 
 # Setup optimizer
-optimizer = torch.optim.Adam(params=model.parameters(), lr = LEARNING_RATE)
+optimizer = torch.optim.Adam(params=models.parameters(), lr = LEARNING_RATE)
 optimizer_name = optimizer.__class__.__name__
 # Setup loss function
 #loss_fn = torch.nn.HuberLoss(delta=50)
 loss_fn = torch.nn.MSELoss()
 loss_fn_name = loss_fn.__class__.__name__
 
-experiment_name = (f'exp_{model.__class__.__name__}' +
+experiment_name = (f'exp_{models.__class__.__name__}' +
                   f'_bn{BATCH_SIZE}' +
                   f'_tr{len(train_data_loader)}' +
                   f'_te{len(test_data_loader)}' +
@@ -153,12 +153,12 @@ logging.basicConfig(filename=f'{experiment_path}/experiment.log',
 logger.info(f"Starting experiment: {experiment_name}")
 logger.info(f"Device: {device}")
 logger.info(f"PyTorch version: {torch.__version__}")
-logger.info(f"Model: {type(model).__name__}")
+logger.info(f"Model: {type(models).__name__}")
 
 logger.info(f"Optimizer: {optimizer_name}")
 logger.info(f"Loss function: {loss_fn_name}")
 
-train_test(model = model, 
+train_test(model = models, 
            train_dataloader = train_data_loader, 
            test_dataloader = test_data_loader, 
            optimizer = optimizer,

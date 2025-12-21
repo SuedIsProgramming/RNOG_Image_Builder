@@ -73,7 +73,7 @@ test_data_loader = DataLoader(dataset = test_album,
 print(f'Number of train batches: {len(train_data_loader)} | Number of test batches: {len(test_data_loader)}')
 
 # Initialize model
-model = RNO_four_1_1_1s_extraconv_dropout_211(input_shape=1,
+models = RNO_four_1_1_1s_extraconv_dropout_211(input_shape=1,
                           hidden_units=HIDDEN_UNITS, 
                           output_shape=3,
                           num_epochs=NUM_EPOCHS,
@@ -82,7 +82,7 @@ model = RNO_four_1_1_1s_extraconv_dropout_211(input_shape=1,
                          )
 
 # Setup optimizer
-optimizer = torch.optim.Adam(params=model.parameters(), lr = LEARNING_RATE)
+optimizer = torch.optim.Adam(params=models.parameters(), lr = LEARNING_RATE)
 optimizer_name = optimizer.__class__.__name__
 # Setup loss function
 #loss_fn = torch.nn.HuberLoss(delta=50)
@@ -140,12 +140,12 @@ logging.basicConfig(filename=f'{experiment_path}/experiment.log',
 logger.info(f"Starting experiment: {experiment_name}")
 logger.info(f"Device: {device}")
 logger.info(f"PyTorch version: {torch.__version__}")
-logger.info(f"Model: {type(model).__name__}")
+logger.info(f"Model: {type(models).__name__}")
 
 logger.info(f"Optimizer: {optimizer_name}")
 logger.info(f"Loss function: {loss_fn_name}")
 
-train_test(model = model, 
+train_test(model = models, 
            train_dataloader = train_data_loader, 
            test_dataloader = test_data_loader, 
            optimizer = optimizer,
