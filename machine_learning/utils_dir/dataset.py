@@ -49,6 +49,20 @@ class AlbumDataset(Dataset):
         self.transform = transform
         self.target_transform = target_transform
         self.normalize_labels = normalize_labels
+
+        if self.target_transform is not None:
+            # Check for Cartesian
+            if self.target_transform.__name__ == 'spher_to_cart':
+                self.label_names = ('x','y','z')
+                print('Setting coordinates to cartesian.')
+            else:
+                # Fallback if transform exists but isn't spher_to_cart
+                self.label_names = ('dim1', 'dim2', 'dim3')
+                print(f'Unknown transform: {self.target_transform.__name__}')
+        else:
+            # Fallback if no transform exists
+            self.label_names = ('r','theta','phi')
+            print('Setting coordinates to spherical.')
         
         # Validate file exists
         if not os.path.exists(album_path):
@@ -79,74 +93,68 @@ class AlbumDataset(Dataset):
                 print("Computing normalization statistics...")
                 self._compute_normalization_stats()
                 print("Normalization stats computed:")
-                print(f"  r:     mean={self.r_mean:.4f}, std={self.r_std:.4f}")
-                print(f"  theta: mean={self.theta_mean:.4f}, std={self.theta_std:.4f}")
-                print(f"  phi:   mean={self.phi_mean:.4f}, std={self.phi_std:.4f}")
-                print(f'[{self.r_mean},{self.r_std},{self.theta_mean},{self.theta_std},{self.phi_mean},{self.phi_std}]')
+                print(f"  {self.label_names[0]}: mean={self.x1_mean:.4f}, std={self.x1_std:.4f}")
+                print(f"  {self.label_names[1]}: mean={self.x2_mean:.4f}, std={self.x2_std:.4f}")
+                print(f"  {self.label_names[2]}: mean={self.x3_mean:.4f}, std={self.x3_std:.4f}")
+                print(f'[{self.x1_mean},{self.x1_std},{self.x2_mean},{self.x2_std},{self.x3_mean},{self.x3_std}]')
             else:
                 print("Utilizing inputted normalization statistics")
-                self.r_mean, self.r_std, self.theta_mean, self.theta_std, \
-                self.phi_mean, self.phi_std = normalization_factors
-                print(f"  r:     mean={self.r_mean:.4f}, std={self.r_std:.4f}")
-                print(f"  theta: mean={self.theta_mean:.4f}, std={self.theta_std:.4f}")
-                print(f"  phi:   mean={self.phi_mean:.4f}, std={self.phi_std:.4f}")
-                print(f'[{self.r_mean},{self.r_std},{self.theta_mean},{self.theta_std},{self.phi_mean},{self.phi_std}]')
+                self.x1_mean, self.x1_std, self.x2_mean, self.x2_std, \
+                self.x3_mean, self.x3_std = normalization_factors
+                print(f"  {self.label_names[0]}: mean={self.x1_mean:.4f}, std={self.x1_std:.4f}")
+                print(f"  {self.label_names[1]}: mean={self.x2_mean:.4f}, std={self.x2_std:.4f}")
+                print(f"  {self.label_names[2]}: mean={self.x3_mean:.4f}, std={self.x3_std:.4f}")
+                print(f'[{self.x1_mean},{self.x1_std},{self.x2_mean},{self.x2_std},{self.x3_mean},{self.x3_std}]')
         else:
             # Set to None to indicate no normalization
-            self.r_mean = None
-            self.r_std = None
-            self.theta_mean = None
-            self.theta_std = None
-            self.phi_mean = None
-            self.phi_std = None
+            self.x1_mean = None
+            self.x1_std = None
+            self.x2_mean = None
+            self.x2_std = None
+            self.x3_mean = None
+            self.x3_std = None
 
     def _compute_normalization_stats(self):
         """
-        Compute mean and std for r, theta, phi across entire dataset.
+        Compute mean and std for x1, x2, x3 across entire dataset.
         This is called once during __init__ if normalize_labels=True.
         """
-        r_values = []
-        theta_values = []
-        phi_values = []
+        x1_values = []
+        x2_values = []
+        x3_values = []
         
         with File(self.path, 'r') as f:
             for idx in range(self.num_images):
                 print(f'\rCompounding statistics... ({idx}/{self.num_images})',end='')
                 _, label = self.__getitem__(idx,to_normalize=True)
-                r, theta, phi = label
+                x1, x2, x3 = label
                 
-                r_values.append(r)
-                theta_values.append(theta)
-                phi_values.append(phi)
+                x1_values.append(x1)
+                x2_values.append(x2)
+                x3_values.append(x3)
         
         # Convert to numpy arrays for efficient computation
-        r_values = np.array(r_values)
-        theta_values = np.array(theta_values)
-        phi_values = np.array(phi_values)
+        x1_values = np.array(x1_values)
+        x2_values = np.array(x2_values)
+        x3_values = np.array(x3_values)
         
         # Compute statistics
-        self.r_mean = float(np.mean(r_values))
-        self.r_std = float(np.std(r_values))
+        self.x1_mean = float(np.mean(x1_values))
+        self.x1_std = float(np.std(x1_values))
         
-        self.theta_mean = float(np.mean(theta_values))
-        self.theta_std = float(np.std(theta_values))
+        self.x2_mean = float(np.mean(x2_values))
+        self.x2_std = float(np.std(x2_values))
         
-        self.phi_mean = float(np.mean(phi_values))
-        self.phi_std = float(np.std(phi_values))
+        self.x3_mean = float(np.mean(x3_values))
+        self.x3_std = float(np.std(x3_values))
         
         # Avoid division by zero
-        if self.r_std < 1e-8:
+        if self.x1_std < 1e-8:
             raise DivisionByZero
-            # print('r_std is zero! Double check data')
-            # self.r_std = 1.0
-        if self.theta_std < 1e-8:
+        if self.x2_std < 1e-8:
             raise DivisionByZero
-            # print('theta_std is zero! Double check data')
-            # self.theta_std = 1.0
-        if self.phi_std < 1e-8:
+        if self.x3_std < 1e-8:
             raise DivisionByZero
-            # print('phi_std is zero! Double check data')
-            # self.phi_std = 1.0
 
     def __len__(self):
         """Return the total number of samples in the dataset."""
@@ -210,23 +218,23 @@ class AlbumDataset(Dataset):
         
         # Apply normalization if enabled
         if self.normalize_labels and not to_normalize:
-            r, theta, phi = label
+            x1, x2, x3 = label
             
             # Z-score normalization using precomputed statistics
-            r_normalized = (r - self.r_mean) / self.r_std
-            theta_normalized = (theta - self.theta_mean) / self.theta_std
-            phi_normalized = (phi - self.phi_mean) / self.phi_std
+            x1_normalized = (x1 - self.x1_mean) / self.x1_std
+            x2_normalized = (x2 - self.x2_mean) / self.x2_std
+            x3_normalized = (x3 - self.x3_mean) / self.x3_std
             
-            label = torch.tensor([r_normalized, theta_normalized, phi_normalized], dtype=torch.float32)
+            label = torch.tensor([x1_normalized, x2_normalized, x3_normalized], dtype=torch.float32)
 
         return image, label
 
-    def denormalize_label(self, normalized_label):
+    def denormalize_label(self, normalized_label: torch.Tensor):
             """
             Convert normalized label back to original units.
             
             Args:
-                normalized_label: torch.Tensor of shape (3,) or (batch, 3) with normalized [r, theta, phi]
+                normalized_label: torch.Tensor of shape (3,) or (batch, 3) with normalized [x1, x2, x3]
             
             Returns:
                 torch.Tensor with denormalized values
@@ -238,21 +246,21 @@ class AlbumDataset(Dataset):
                 normalized_label = torch.from_numpy(normalized_label)
 
             if normalized_label.dim() == 1:
-                r_norm, theta_norm, phi_norm = normalized_label
-                r = r_norm * self.r_std + self.r_mean
-                theta = theta_norm * self.theta_std + self.theta_mean
-                phi = phi_norm * self.phi_std + self.phi_mean
-                return torch.tensor([r, theta, phi], dtype=torch.float32)
+                x1_norm, x2_norm, x3_norm = normalized_label
+                x1 = x1_norm * self.x1_std + self.x1_mean
+                x2 = x2_norm * self.x2_std + self.x2_mean
+                x3 = x3_norm * self.x3_std + self.x3_mean
+                return torch.tensor([x1, x2, x3], dtype=torch.float32)
             else:
                 # Batch of labels
-                r_norm = normalized_label[:, 0] * self.r_std + self.r_mean
-                theta_norm = normalized_label[:, 1] * self.theta_std + self.theta_mean
-                phi_norm = normalized_label[:, 2] * self.phi_std + self.phi_mean
-                return torch.stack([r_norm, theta_norm, phi_norm], dim=1)
+                x1_norm = normalized_label[:, 0] * self.x1_std + self.x1_mean
+                x2_norm = normalized_label[:, 1] * self.x2_std + self.x2_mean
+                x3_norm = normalized_label[:, 2] * self.x3_std + self.x3_mean
+                return torch.stack([x1_norm, x2_norm, x3_norm], dim=1)
 
     def get_normalization_factors(self):
-        normalization_factors = [self.r_mean, self.r_std, self.theta_mean, self.theta_std, \
-                                 self.phi_mean, self.phi_std]
+        normalization_factors = [self.x1_mean, self.x1_std, self.x2_mean, self.x2_std, \
+                                 self.x3_mean, self.x3_std]
         return normalization_factors
 
     def close(self):
