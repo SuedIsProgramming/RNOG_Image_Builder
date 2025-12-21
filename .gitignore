@@ -25,3 +25,4 @@ experiments/
 wandb/
 *.txt
 /*.ipynb
+* DO NOT USE
