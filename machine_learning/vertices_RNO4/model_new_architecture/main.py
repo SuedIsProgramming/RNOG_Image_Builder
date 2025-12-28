@@ -33,7 +33,7 @@ BATCH_SIZE = 128
 # Setup number of epochs to train
 NUM_EPOCHS = int(100_000)
 # Use checkpoint if needed (None if not)
-checkpoint_path = None
+checkpoint_path = '/data/condor_shared/users/ssued/RNOG_Image_Builder/machine_learning/vertices_RNO4/model_new_architecture/experiments/exp_RNO_four_late_non_linear_merge_bn128_tr495_te124_lfn-MSELoss_opt-Adam_hiddenu-32_lr-0.001_lFactor-0.1_cartesian_transform-True_temporalRes-256/checkpoints/checkpoint_e273.pth'
 # Checkpoint frequency for saving
 CHECKPOINT_FREQ = 10
 # Choose whether to include initial batch normalization
@@ -48,7 +48,14 @@ LEARNING_RATE = 0.001
 HIDDEN_UNITS = 32
 # Transform
 CARTESIAN = True
+# Wandb ID
+WANDB_ID ='bv9m7qwf'
 # ====================================================================
+
+if checkpoint_path is not None:
+    print('<<<<<<<<<<WARNING: UTILIZING CHECKPOINT>>>>>>>>>>')
+if WANDB_ID is not None:
+    print(f'<<<<<<<<<<WARNING: UTILIZING RUN_ID: {WANDB_ID}>>>>>>>>>>')
 
 if CARTESIAN:
     TARGET_TRANSFORM = spher_to_cart
@@ -57,7 +64,7 @@ else:
 
 # Print out versions and device to make sure everything is working
 if torch.cuda.is_available():
-    device = torch.device('cuda:0')
+    device = torch.device('cuda:1')
 else:
     device = "cpu"
     
@@ -103,7 +110,8 @@ models = models.RNO_four_late_non_linear_merge(input_shape=1,
                           batch_size=BATCH_SIZE,
                           num_train_batches=len(train_data_loader),
                           leak_factor=LEAK_FACTOR,
-                          dropout_rate=DROPOUT_RATE
+                          dropout_rate=DROPOUT_RATE,
+                          temporal_res=256
                           )
 
 # Setup optimizer
@@ -125,6 +133,7 @@ experiment_name = (f'exp_{models.__class__.__name__}' +
                   f'_lFactor-{LEAK_FACTOR}' +
                 #   f'_batchnorm-{NORMALIZE_INPUTS}' +
                   f'_cartesian_transform-{CARTESIAN}' +
+                  '_temporalRes-256' +
                 ''
                )
 
@@ -179,4 +188,5 @@ train_test(model = models,
            checkpoint_freq = CHECKPOINT_FREQ,
            checkpoint_path = checkpoint_path,
            loss_file = 'losses.txt',
-           logger = logger)
+           logger = logger,
+           wandb_id=WANDB_ID)

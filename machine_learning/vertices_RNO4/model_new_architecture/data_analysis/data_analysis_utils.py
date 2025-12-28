@@ -359,6 +359,8 @@ class ModelEval:
             x_guess, y_guess, z_guess = guess_arr[:, 0], guess_arr[:, 1], guess_arr[:, 2]
 
             euclidean_dist_err = np.sqrt( (x_true-x_guess)**2 + (y_true-y_guess)**2 + (z_true-z_guess)**2 )
+            euclidean_dist_err_68th = float(np.percentile(euclidean_dist_err,68.27))
+            euclidean_dist_err_med = float(np.median(euclidean_dist_err))
 
             # --- Coordinate Transformation & Error Calc ---
             if spherical:
@@ -382,6 +384,7 @@ class ModelEval:
 
                 names = ['Radius', 'Inclination', 'Azimuth']
                 colors = ['tab:orange', 'tab:green', 'tab:blue']
+                units = ['m', 'rad', 'rad']
                 
             else:
                 x1_err, x2_err, x3_err = x_guess - x_true, y_guess - y_true, z_guess - z_true
@@ -392,6 +395,27 @@ class ModelEval:
 
                 names = ['X', 'Y', 'Z']
                 colors = ['tab:orange', 'tab:green', 'tab:blue']
+                units = ['m']*3
+
+            # Obtain median of errors
+            x1_err_med = float(np.median(x1_err))
+            x2_err_med = float(np.median(x2_err))
+            x3_err_med = float(np.median(x3_err))
+
+            # Obtain median of relative errors
+            x1_err_rel_med = float(np.median(x1_rel_err))
+            x2_err_rel_med = float(np.median(x2_rel_err))
+            x3_err_rel_med = float(np.median(x3_rel_err))
+
+            # Obtain 68th percentiles of errors
+            x1_err_68th = np.percentile(x1_err, [15.87, 84.13])
+            x2_err_68th = np.percentile(x2_err, [15.87, 84.13])
+            x3_err_68th = np.percentile(x3_err, [15.87, 84.13])
+
+            # Obtain 68th percentiles of relative errors
+            x1_rel_err_68th = np.percentile(x1_rel_err, [15.87, 84.13])
+            x2_rel_err_68th = np.percentile(x2_rel_err, [15.87, 84.13])
+            x3_rel_err_68th = np.percentile(x3_rel_err, [15.87, 84.13])
 
             # --- PLOTTING LOGIC (GridSpec) ---
             fig = plt.figure(figsize=(24, 10))
@@ -402,33 +426,40 @@ class ModelEval:
             # 1. Euclidean Plot (Spans BOTH rows in Column 0)
             ax_euc = fig.add_subplot(gs[:, 0])
             ax_euc.hist(euclidean_dist_err, bins=50, color='tab:gray', alpha=0.7, edgecolor='black')
+            ax_euc.axvline(euclidean_dist_err_68th,color='black',label=f'68th Percentile = {euclidean_dist_err_68th:.3f} m',lw=2)
+            ax_euc.axvline(euclidean_dist_err_med,color='black',label=f'Median: {euclidean_dist_err_med:.3f} m')
             ax_euc.set_title('Euclidean Distance Error')
             ax_euc.set_xlabel('Error (m)')
             ax_euc.set_ylabel('Frequency')
+            ax_euc.legend()
             ax_euc.grid(True, alpha=0.3)
 
             # Helper to plot component columns
-            def plot_col(col_idx, error_abs, error_rel, name, color):
+            def plot_col(col_idx, error_abs, error_abs68, error_abs_med, error_rel, error_rel68, error_rel_med, name, color, unit):
                 # Top Row: Absolute Error
                 ax_abs = fig.add_subplot(gs[0, col_idx])
                 ax_abs.hist(error_abs, bins=50, color=color, alpha=0.7)
-                ax_abs.set_title(f'{name} Error')
-                ax_abs.set_xlabel(f'Abs Error')
+                ax_abs.axvline(error_abs68[0], color='black', label='68th Percentile', lw=2)
+                ax_abs.axvline(error_abs68[1], color='black',lw=2)
+                ax_abs.set_title(f'{name} Error\n Median: {error_abs_med:.3f} {unit} | 68th%: ({error_abs68[0]:.3f},{error_abs68[1]:.3f}) {unit}')
+                ax_abs.set_xlabel('Abs Error')
+                ax_abs.legend()
                 ax_abs.grid(True, alpha=0.3)
 
                 # Bottom Row: Relative Error
                 ax_rel = fig.add_subplot(gs[1, col_idx])
-                # Clip huge relative errors for cleaner plots (optional)
-                # data_clean = error_rel[(error_rel > -5) & (error_rel < 5)] 
                 ax_rel.hist(error_rel, bins=50, color=color, alpha=0.5, hatch='//')
-                ax_rel.set_title(f'{name} Rel. Error')
+                ax_rel.axvline(error_rel68[0], color='black', label='68th Percentile', lw=2)
+                ax_rel.axvline(error_rel68[1], color='black', lw=2)
+                ax_rel.set_title(f'{name} Rel. Error\n Median: {error_rel_med:.4f} | 68th%: ({error_rel68[0]:.4f},{error_rel68[1]:.4f})')
                 ax_rel.set_xlabel('Relative Error')
+                ax_rel.legend()
                 ax_rel.grid(True, alpha=0.3)
 
             # Plot the 3 components in Columns 1, 2, 3
-            plot_col(1, x1_err, x1_rel_err, names[0], colors[0])
-            plot_col(2, x2_err, x2_rel_err, names[1], colors[1])
-            plot_col(3, x3_err, x3_rel_err, names[2], colors[2])
+            plot_col(1, x1_err, x1_err_68th, x1_err_med, x1_rel_err, x1_rel_err_68th, x1_err_rel_med, names[0], colors[0], units[0])
+            plot_col(2, x2_err, x2_err_68th, x2_err_med, x2_rel_err, x2_rel_err_68th, x2_err_rel_med, names[1], colors[1], units[1])
+            plot_col(3, x3_err, x3_err_68th, x3_err_med, x3_rel_err, x3_rel_err_68th, x3_err_rel_med, names[2], colors[2], units[2])
 
             # Final Formatting
             title = custom_title if custom_title else f'Model performance for {self.checkpoint_path.name} (N={self.num_samples})'
