@@ -1,7 +1,7 @@
 import logging
 import torch
 
-def train_step(model: torch.nn.Module, data_loader: torch.utils.data.DataLoader, loss_fn: torch.nn.Module, optimizer: torch.optim, device: torch.device, logger: logging.Logger):
+def train_step(model: torch.nn.Module, data_loader: torch.utils.data.DataLoader, loss_fn: torch.nn.Module, optimizer: torch.optim.Optimizer, device: torch.device | str, logger: logging.Logger):
     """
     Performs one training epoch over the entire batched dataset.
     

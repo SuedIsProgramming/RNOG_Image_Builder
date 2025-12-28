@@ -27,17 +27,30 @@ def save_checkpoint(epoch, model, optimizer, scheduler, train_loss, test_loss, c
 
 def load_checkpoint(model, optimizer, scheduler, logger, device, checkpoint_path):
     try:
-        loaded_checkpoint = torch.load(checkpoint_path,map_location=device)
+        # Load checkpoint onto CPU to avoid CUDA OOM during simple eval setup
+        loaded_checkpoint = torch.load(checkpoint_path, map_location='cpu')
+        
+        # Handle potential state_dict nesting
+        state_dict = loaded_checkpoint['model_state_dict'] if 'model_state_dict' in loaded_checkpoint else loaded_checkpoint
+        optimizer_dict = loaded_checkpoint['optimizer_state_dict'] if 'optimizer_state_dict' in loaded_checkpoint else loaded_checkpoint
+
     except FileNotFoundError:
         logger.error(f'Could not find checkpoint: {checkpoint_path}')
         raise
 
     # load states
-    model.load_state_dict(loaded_checkpoint['model_state_dict'])
-    optimizer.load_state_dict(loaded_checkpoint['optimizer_state_dict'])
+    model.load_state_dict(_uncompile_keys(state_dict))
+    optimizer.load_state_dict(_uncompile_keys(optimizer_dict))
     move_optimizer_to_device(optimizer, device)
     if loaded_checkpoint['scheduler_state_dict'] is not None and scheduler is not None:
         scheduler.load_state_dict(loaded_checkpoint['scheduler_state_dict'])
 
     return loaded_checkpoint['epoch'] + 1
     
+def _uncompile_keys(state_dict: dict) -> dict:
+    """Helper to remove torch.compile prefix '_orig_mod.' from compiled state dict keys."""
+    new_state_dict = {}
+    for k, v in state_dict.items():
+        new_key = k.replace("_orig_mod.", "") 
+        new_state_dict[new_key] = v
+    return new_state_dict

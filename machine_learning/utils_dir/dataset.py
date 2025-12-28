@@ -125,7 +125,7 @@ class AlbumDataset(Dataset):
         
         with File(self.path, 'r') as f:
             for idx in range(self.num_images):
-                print(f'\rCompounding statistics... ({idx}/{self.num_images})',end='')
+                print(f'\rCompounding statistics... ({idx}/{self.num_images})',end='',flush=True)
                 _, label = self.__getitem__(idx,to_normalize=True)
                 x1, x2, x3 = label
                 

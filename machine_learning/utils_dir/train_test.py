@@ -1,3 +1,4 @@
+from torch.optim.lr_scheduler import LRScheduler, ReduceLROnPlateau
 from .train_test_steps.train import train_step
 from .train_test_steps.test import test_step
 from .utils import save_checkpoint, load_checkpoint
@@ -14,15 +15,16 @@ def train_test(model: torch.nn.Module,
                train_dataloader: torch.utils.data.DataLoader, 
                test_dataloader: torch.utils.data.DataLoader, 
                optimizer: torch.optim.Optimizer,
-               scheduler: torch.optim.lr_scheduler,
+               scheduler: LRScheduler | ReduceLROnPlateau | None,
                loss_fn: torch.nn.Module,
-               device: torch.device,
+               device: torch.device | str,
                experiment_name: str,
                logger: logging.Logger,
                epochs: int = 5,
                checkpoint_freq: int = 100,
-               checkpoint_path: str = None,
-               loss_file: str = 'losses.txt'):
+               checkpoint_path: str | None = None,
+               loss_file: str = 'losses.txt',
+               wandb_id: str | None = None):
 
     # Final epoch for logging
     final_epoch = 0
@@ -43,8 +45,10 @@ def train_test(model: torch.nn.Module,
     # Log into wandb and initialize
     wandb.login()
     wandb.init(project=project_name,
-               name=experiment_name, # Pass a runname
-              config={"dataset": len(train_dataloader.dataset),
+               name=experiment_name,
+               id=wandb_id,
+               resume='allow',
+              config={"dataset": train_dataloader.dataset.path, # type: ignore (path is a field in my AlbumDataset class)
                       "epochs": epochs,
                       "loss_fn": loss_fn_name,
                       "optimizer_name": optimizer_name,
@@ -52,7 +56,7 @@ def train_test(model: torch.nn.Module,
     # Utilize checkpoint if specified
     if checkpoint_path:
         logger.info(f'Checkpoint specified, extracting checkpoint state from: {checkpoint_path}')
-        
+
         start_epoch = load_checkpoint(model, optimizer, scheduler, logger, device, checkpoint_path)
         
         logger.info('Checkpoint loaded successfully')
@@ -60,7 +64,8 @@ def train_test(model: torch.nn.Module,
         start_epoch = 0
 
     # Move model parameters to the specified device after compiling to make more efficient
-    model = torch.compile(model).to(device)
+    model = model.to(device) # Move first
+    model = torch.compile(model) # type: ignore (Ignore the fact that model is no longer a nn.Module model after being compiled!)
 
     # Track timing
     start_time = time.time()
@@ -68,6 +73,9 @@ def train_test(model: torch.nn.Module,
     loss_file_path = os.path.join(experiment_dir,loss_file)
     file_exists = os.path.exists(loss_file_path)
     
+    train_loss = None
+    test_loss = None
+
     with open(loss_file_path, 'a', newline='') as csvfile:
         writer = csv.writer(csvfile)
 
@@ -77,6 +85,10 @@ def train_test(model: torch.nn.Module,
     
         try:
             for epoch in range(start_epoch, start_epoch + epochs):
+                # Save 0 epoch before any training step:
+                if epoch == 0:
+                    save_checkpoint(epoch,model,optimizer,scheduler,0,0,checkpoints_dir,logger)
+
                 # Epoch start time
                 epoch_start = time.time()
                 
@@ -97,7 +109,8 @@ def train_test(model: torch.nn.Module,
                 
                 # Scheduler step if present
                 if scheduler:
-                    scheduler.step()
+                    pass # pass for now
+                    #scheduler.step() 
 
                 # Write losses to csv
                 writer.writerow([epoch,train_loss,test_loss])
@@ -109,13 +122,14 @@ def train_test(model: torch.nn.Module,
                 # Obtain time elapsed
                 epoch_end = time.time()
                 
-                # Log losses to wandb
+                # Log losses to wandb with EXPLICIT STEP
                 wandb.log({"Train Loss": train_loss,
                            "Test Loss": test_loss,
                            "Epoch Time": epoch_end-epoch_start,
-                           "stop_file_exists": int(os.path.exists('STOP_TRAINING'))})
+                           "stop_file_exists": int(os.path.exists('STOP_TRAINING'))},
+                           step=epoch) # Forces alignment with epoch number
                 
-                if epoch % checkpoint_freq == 0:
+                if epoch % checkpoint_freq == 0 and epoch != 0:
                     save_checkpoint(epoch,model,optimizer,scheduler,train_loss,test_loss,checkpoints_dir,logger)
 
                 final_epoch = epoch
@@ -140,7 +154,7 @@ def train_test(model: torch.nn.Module,
                 os.remove('STOP_TRAINING')
             # Only save final checkpoint if we have valid loss values
             if 'train_loss' in locals() and 'test_loss' in locals():
-                save_checkpoint(final_epoch,model,optimizer,scheduler,train_loss,test_loss,checkpoints_dir,logger)
+                save_checkpoint(final_epoch,model,optimizer,scheduler,train_loss,test_loss,checkpoints_dir,logger) # unbound: ignore
                 logger.info(f'Code exited on epoch: {final_epoch} and a checkpoint was created in {checkpoints_dir}')
                 wandb.finish()    
             else:

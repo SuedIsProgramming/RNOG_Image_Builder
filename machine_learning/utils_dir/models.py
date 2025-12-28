@@ -405,7 +405,7 @@ class RNO_four_2_0_0_normalized(nn.Module):
         
         return x
 
-class RNO_four_2_1_0_linear(nn.Module):
+class RNO_four_2_1_0_linear_fixed(nn.Module):
     """
     Modified convolutional network that replaces Global Pooling with a Dense (Linear) Layer.
     
@@ -465,7 +465,7 @@ class RNO_four_2_1_0_linear(nn.Module):
         self.mid_conv_block = nn.Sequential(
             nn.Conv3d(in_channels=hidden_units,
                       out_channels=hidden_units,
-                      kernel_size=(2, 4, 2)),
+                      kernel_size=(2, 4, 1)), # FIXED: Kernel_size from (2,4,2) to (2,4,1). Look at 12/23/2025 note for details.
             nn.LeakyReLU(leak_factor),
             nn.MaxPool3d(kernel_size=(2, 4, 2)) 
         )
@@ -521,6 +521,174 @@ class RNO_four_2_1_0_linear(nn.Module):
         x = self.final_linear(x)
         
         return x
+
+class RNO_four_late_linear_merge(nn.Module):
+    """
+    Latest model that utilizes a new archietcture for vertex reconstruction:
+
+    Each station voltage is processed separately. For each station we use previously implemented CNN techniques and
+    at the end we merge all of the input data with a single linear layer. Additionally, this model allows for variable
+    time bins and dimensions.
+
+    Station Block: Extract features of every single station.
+    Normalization Block: Normalize the dimensions for managable input of the last layer.
+    Linear TDoA: Utilize the smaller output of the normalization block with the extracted features to discern the actual location. 
+    """
+
+    def __init__(self, 
+                 input_shape: int,
+                 hidden_units: int, 
+                 output_shape: int, 
+                 num_epochs: int | None = None,
+                 batch_size: int | None = None,
+                 num_train_batches: int | None = None,
+                 station_num: int = 4,
+                 leak_factor: float = 0.1,
+                 dropout_rate: float = 0.1):
+        
+        super().__init__()
+        
+        # Store metadata (optional but good for logging)
+        self.num_epochs = num_epochs
+        self.batch_size = batch_size
+        self.num_train_batches = num_train_batches
+
+        # --- STATION BLOCK (Feature Extraction) ---
+        self.station_block = nn.Sequential(
+            # 1. Normalize Input (Raw Voltage)
+            nn.BatchNorm3d(input_shape, momentum=0.01, affine=True), 
+
+            # 2. Layer 1: Detect Pulses
+            nn.Conv3d(in_channels=input_shape, out_channels=hidden_units, 
+                      kernel_size=(3,3,1), padding=(1,1,0)),
+            nn.LeakyReLU(negative_slope=leak_factor),
+
+            # 3. Layer 2: Refine Features
+            nn.Conv3d(in_channels=hidden_units, out_channels=hidden_units, 
+                      kernel_size=(3,3,1), padding=(1,1,0)),
+            nn.LeakyReLU(negative_slope=leak_factor),
+            nn.MaxPool3d(kernel_size=(1,2,1)), # Shrink time
+            
+            # 4. Layer 3: Deep Features
+            nn.Conv3d(in_channels=hidden_units, out_channels=hidden_units, 
+                      kernel_size=(3,3,1), padding=(1,1,0)),
+            nn.LeakyReLU(negative_slope=leak_factor),
+            nn.MaxPool3d(kernel_size=(1,2,1))  # Shrink time
+        )
+
+        # --- NORMALIZATION BLOCK ---
+        # Forces output to (24 Depth, 128 Time, n Stations)
+        self.normalization_block = nn.Sequential(
+            nn.AdaptiveMaxPool3d((24, 128, station_num))
+        )
+
+        # --- LINEAR TDOA BLOCK ---
+        # Channels (hidden) * Depth (24) * Time (128) * Stations (station_num)
+        self.flatten_size = hidden_units * 24 * 128 * station_num
+        
+        self.linear_TDoA = nn.Sequential(
+            nn.Flatten(),
+            nn.Dropout(p=dropout_rate),
+            nn.Linear(in_features=self.flatten_size, out_features=output_shape)
+        )
+
+    def forward(self, x):
+        x = self.station_block(x)
+        x = self.normalization_block(x)
+        x = self.linear_TDoA(x)
+        x = torch.squeeze(x)
+        return x
+
+
+class RNO_four_late_non_linear_merge(nn.Module):
+    """
+    Latest model that utilizes a new archietcture for vertex reconstruction:
+
+    Each station voltage is processed separately. For each station we use previously implemented CNN techniques and
+    at the end we merge all of the input data with a single linear layer. Additionally, this model allows for variable
+    time bins and dimensions.
+
+    Station Block: Extract features of every single station.
+    Normalization Block: Normalize the dimensions for managable input of the last layer.
+    NON-Linear TDoA: Utilize the smaller output of the normalization block with the extracted features to discern the actual location, with added non-linearity
+    """
+
+    def __init__(self, 
+                 input_shape: int,
+                 hidden_units: int, 
+                 output_shape: int, 
+                 num_epochs: int | None = None,
+                 batch_size: int | None = None,
+                 num_train_batches: int | None = None,
+                 station_num: int = 4,
+                 leak_factor: float = 0.1,
+                 dropout_rate: float = 0.1,
+                 temporal_res: int = 128):
+        
+        super().__init__()
+        
+        # Store metadata (optional but good for logging)
+        self.num_epochs = num_epochs
+        self.batch_size = batch_size
+        self.num_train_batches = num_train_batches
+
+        # --- STATION BLOCK (Feature Extraction) ---
+        self.station_block = nn.Sequential(
+            # 1. Normalize Input (Raw Voltage)
+            nn.BatchNorm3d(input_shape, momentum=0.01, affine=True), 
+
+            # 2. Layer 1: Detect Pulses
+            nn.Conv3d(in_channels=input_shape, out_channels=hidden_units, 
+                      kernel_size=(3,3,1), padding=(1,1,0)),
+            nn.LeakyReLU(negative_slope=leak_factor),
+
+            # 3. Layer 2: Refine Features
+            nn.Conv3d(in_channels=hidden_units, out_channels=hidden_units, 
+                      kernel_size=(3,3,1), padding=(1,1,0)),
+            nn.LeakyReLU(negative_slope=leak_factor),
+            nn.MaxPool3d(kernel_size=(1,2,1)), # Shrink time
+            
+            # 4. Layer 3: Deep Features
+            nn.Conv3d(in_channels=hidden_units, out_channels=hidden_units, 
+                      kernel_size=(3,3,1), padding=(1,1,0)),
+            nn.LeakyReLU(negative_slope=leak_factor),
+        )
+
+        # --- NORMALIZATION BLOCK ---
+        # Forces output to (24 Depth, 128 Time, n Stations)
+        self.normalization_block = nn.Sequential(
+            nn.AdaptiveMaxPool3d((24, temporal_res, station_num))
+        )
+
+        # --- LINEAR TDOA BLOCK ---
+        # Channels (hidden) * Depth (24) * Time (temporal_res) * Stations (station_num)
+        self.flatten_size = hidden_units * 24 * temporal_res * station_num
+        
+        self.nonlinear_TDoA = nn.Sequential(
+            nn.Flatten(),
+
+            # Layer 1: Feature compression
+            nn.Linear(in_features=self.flatten_size, out_features=256),
+            nn.LeakyReLU(negative_slope=leak_factor),
+            nn.Dropout(p=dropout_rate),
+            
+            # Layer 2: Geometric Reasoning (Triangulation)
+            # This layer allows the model to perform the non-linear math
+            nn.Linear(in_features=256, out_features=128),
+            nn.LeakyReLU(negative_slope=leak_factor),
+            nn.Dropout(p=dropout_rate),
+
+            # Output
+            nn.Linear(in_features=128, out_features=output_shape)
+        )
+
+    def forward(self, x):
+        x = self.station_block(x)
+        x = self.normalization_block(x)
+        x = self.nonlinear_TDoA(x)
+        x = torch.squeeze(x)
+        return x
+
 
 class RNO_four_1_1_1s_batch_norm_dropout_extraconv_nonleak(nn.Module):
     """
