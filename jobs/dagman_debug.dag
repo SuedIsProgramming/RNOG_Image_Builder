@@ -7,8 +7,8 @@ VARS stepTwo_0 sim_num="0"
 JOB stepThree_multip_0 /data/condor_shared/users/ssued/RNOG_Image_Builder/jobs/step3_multip.sub 
 VARS stepThree_multip_0 sim_num="0" 
 
-PARENT stepOne_0 CHILD stepTwo_0
-PARENT stepTwo_0 CHILD stepThree_multip_0
+PARENT stepOne_0 CHILD stepTwo_0 
+PARENT stepTwo_0 CHILD stepThree_multip_0 
 
 JOB stepOne_1 /data/condor_shared/users/ssued/RNOG_Image_Builder/jobs/step1.sub 
 VARS stepOne_1 sim_num="1" 
@@ -27,14 +27,16 @@ VARS stepTwo_2 sim_num="2"
 JOB stepThree_multip_2 /data/condor_shared/users/ssued/RNOG_Image_Builder/jobs/step3_multip.sub 
 VARS stepThree_multip_2 sim_num="2" 
 
-PARENT stepOne_2 CHILD stepTwo_2
-PARENT stepTwo_2 CHILD stepThree_multip_2
+PARENT stepOne_2 CHILD stepTwo_2 
+PARENT stepTwo_2 CHILD stepThree_multip_2 
 
 JOB stepFour_multip_1 /data/condor_shared/users/ssued/RNOG_Image_Builder/jobs/step4_n1.sub
 JOB stepFour_multip_2 /data/condor_shared/users/ssued/RNOG_Image_Builder/jobs/step4_n2.sub
 JOB stepFour_multip_3 /data/condor_shared/users/ssued/RNOG_Image_Builder/jobs/step4_n3.sub
 JOB stepFour_multip_4 /data/condor_shared/users/ssued/RNOG_Image_Builder/jobs/step4_n4.sub
 
+PARENT stepThree_multip_0 CHILD stepFour_multip_1 
+PARENT stepThree_multip_1 CHILD stepFour_multip_1 
 PARENT stepThree_multip_2 CHILD stepFour_multip_1 
 PARENT stepFour_multip_1 CHILD stepFour_multip_2 
 PARENT stepFour_multip_2 CHILD stepFour_multip_3 

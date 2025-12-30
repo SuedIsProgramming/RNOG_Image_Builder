@@ -4,7 +4,7 @@ import re
 import os
 
 def get_album_name():
-    album_name = 'RNO_album_11_03_2025_20k_unorm'
+    album_name = 'RNO_album_12_30_2025_50k_cartesian'
 
     return album_name
 
