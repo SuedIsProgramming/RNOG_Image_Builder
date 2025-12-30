@@ -1,6 +1,7 @@
 from torch.utils.data import DataLoader
 import logging
 import torch
+import time
 import sys
 import os
 
@@ -11,8 +12,7 @@ torch.set_float32_matmul_precision('high')
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 
 # Import all functions from utils_dir (handled by __init__.py)
-from utils_dir import *
-import time
+from utils_dir import train_test, AlbumDataset, models, spher_to_cart
 
 # Only function if current working directory is model dir:
 
@@ -33,7 +33,7 @@ BATCH_SIZE = 128
 # Setup number of epochs to train
 NUM_EPOCHS = int(100_000)
 # Use checkpoint if needed (None if not)
-checkpoint_path = '/data/condor_shared/users/ssued/RNOG_Image_Builder/machine_learning/vertices_RNO4/model_new_architecture/experiments/exp_RNO_four_late_non_linear_merge_bn128_tr495_te124_lfn-MSELoss_opt-Adam_hiddenu-32_lr-0.001_lFactor-0.1_cartesian_transform-True_temporalRes-256/checkpoints/checkpoint_e273.pth'
+checkpoint_path = '/data/condor_shared/users/ssued/RNOG_Image_Builder/machine_learning/vertices_RNO4/model_new_architecture/experiments/exp_RNO_four_late_non_linear_merge_bn128_tr495_te124_lfn-MSELoss_opt-Adam_hiddenu-32_lr-0.001_lFactor-0.1_cartesian_transform-True/checkpoints/checkpoint_e654.pth'
 # Checkpoint frequency for saving
 CHECKPOINT_FREQ = 10
 # Choose whether to include initial batch normalization
@@ -49,7 +49,9 @@ HIDDEN_UNITS = 32
 # Transform
 CARTESIAN = True
 # Wandb ID
-WANDB_ID ='bv9m7qwf'
+WANDB_ID = 'vu4snydg'
+# Temporal resolution of second layer
+TEMPORAL_RES = 128
 # ====================================================================
 
 if checkpoint_path is not None:
@@ -111,7 +113,7 @@ models = models.RNO_four_late_non_linear_merge(input_shape=1,
                           num_train_batches=len(train_data_loader),
                           leak_factor=LEAK_FACTOR,
                           dropout_rate=DROPOUT_RATE,
-                          temporal_res=256
+                          temporal_res=TEMPORAL_RES
                           )
 
 # Setup optimizer
@@ -133,7 +135,7 @@ experiment_name = (f'exp_{models.__class__.__name__}' +
                   f'_lFactor-{LEAK_FACTOR}' +
                 #   f'_batchnorm-{NORMALIZE_INPUTS}' +
                   f'_cartesian_transform-{CARTESIAN}' +
-                  '_temporalRes-256' +
+                  f'_temporalRes-{TEMPORAL_RES}' +
                 ''
                )
 
@@ -175,6 +177,7 @@ logger.info(f"Model: {type(models).__name__}")
 
 logger.info(f"Optimizer: {optimizer_name}")
 logger.info(f"Loss function: {loss_fn_name}")
+
 
 train_test(model = models, 
            train_dataloader = train_data_loader, 
