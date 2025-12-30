@@ -61,7 +61,8 @@ if __name__ == "__main__":
                                 detectorfile=f"{root_dir}/jobs/jobs_simulation_data/RNO_four_stations.json",
                                 outputfilenameNuRadioReco=f"{root_dir}/jobs/jobs_simulation_data/output_{sim_num}.nur",
                                 config_file=f"{root_dir}/jobs/jobs_simulation_data/config.yaml",
-                                file_overwrite=True)
+                                file_overwrite=True,
+                                trigger_channels=[0,1])
     sim.run()
 
 end_time = time.time()
