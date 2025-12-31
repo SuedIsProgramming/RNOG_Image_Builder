@@ -24,7 +24,8 @@ def train_test(model: torch.nn.Module,
                checkpoint_freq: int = 100,
                checkpoint_path: str | None = None,
                loss_file: str = 'losses.txt',
-               wandb_id: str | None = None):
+               wandb_id: str | None = None,
+               min_test_loss_epoch: bool = True):
 
     # Final epoch for logging
     final_epoch = 0
@@ -75,6 +76,7 @@ def train_test(model: torch.nn.Module,
     
     train_loss = None
     test_loss = None
+    test_loss_min = float('inf')
 
     with open(loss_file_path, 'a', newline='') as csvfile:
         writer = csv.writer(csvfile)
@@ -82,7 +84,7 @@ def train_test(model: torch.nn.Module,
         # If file already exists, skip headers
         if not file_exists:
             writer.writerow(['Epoch', 'Train Loss', 'Test Loss'])
-    
+
         try:
             for epoch in range(start_epoch, start_epoch + epochs):
                 # Save 0 epoch before any training step:
@@ -91,7 +93,7 @@ def train_test(model: torch.nn.Module,
 
                 # Epoch start time
                 epoch_start = time.time()
-                
+
                 # --- Training step ---
                 train_loss = train_step(model=model,
                                             data_loader=train_dataloader,
@@ -107,6 +109,20 @@ def train_test(model: torch.nn.Module,
                                       device=device,
                                       logger=logger)
                 
+                if min_test_loss_epoch:
+                    if test_loss < test_loss_min:
+                        # Save new minimum
+                        save_checkpoint(f'min_{epoch}',model,optimizer,scheduler,0,0,checkpoints_dir,logger)
+                        # remove previous minimum
+                        for filename in os.listdir(checkpoints_dir):
+                            if 'min_' in filename and f'min_{epoch}' not in filename:
+                                old_min_path = os.path.join(checkpoints_dir,filename)
+                                try:
+                                    os.remove(old_min_path)
+                                    logger.info(f"Removed previous best checkpoint: {filename}")
+                                except OSError as e:
+                                    logger.warning(f"Failed to remove old checkpoint {filename}: {e}")
+
                 # Scheduler step if present
                 if scheduler:
                     pass # pass for now

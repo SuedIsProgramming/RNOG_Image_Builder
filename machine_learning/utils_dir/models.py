@@ -623,7 +623,7 @@ class RNO_four_late_non_linear_merge(nn.Module):
                  station_num: int = 4,
                  leak_factor: float = 0.1,
                  dropout_rate: float = 0.1,
-                 temporal_res: int = 128):
+                 temporal_res: int = 64):
         
         super().__init__()
         

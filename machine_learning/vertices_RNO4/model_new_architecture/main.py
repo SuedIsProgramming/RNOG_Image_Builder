@@ -33,9 +33,9 @@ BATCH_SIZE = 128
 # Setup number of epochs to train
 NUM_EPOCHS = int(100_000)
 # Use checkpoint if needed (None if not)
-checkpoint_path = '/data/condor_shared/users/ssued/RNOG_Image_Builder/machine_learning/vertices_RNO4/model_new_architecture/experiments/exp_RNO_four_late_non_linear_merge_bn128_tr495_te124_lfn-MSELoss_opt-Adam_hiddenu-32_lr-0.001_lFactor-0.1_cartesian_transform-True/checkpoints/checkpoint_e654.pth'
+checkpoint_path = None
 # Checkpoint frequency for saving
-CHECKPOINT_FREQ = 10
+CHECKPOINT_FREQ = 50
 # Choose whether to include initial batch normalization
 NORMALIZE_INPUTS = True
 # How steep the slope for the negative domain of LReLU is, 0 = ReLU.
@@ -49,9 +49,9 @@ HIDDEN_UNITS = 32
 # Transform
 CARTESIAN = True
 # Wandb ID
-WANDB_ID = 'vu4snydg'
+WANDB_ID = None
 # Temporal resolution of second layer
-TEMPORAL_RES = 128
+TEMPORAL_RES = 32
 # ====================================================================
 
 if checkpoint_path is not None:
@@ -105,7 +105,7 @@ test_data_loader = DataLoader(dataset = test_album,
 print(f'Number of train batches: {len(train_data_loader)} | Number of test batches: {len(test_data_loader)}')
 
 # Initialize model
-models = models.RNO_four_late_non_linear_merge(input_shape=1,
+model = models.RNO_four_late_non_linear_merge(input_shape=1,
                           hidden_units=HIDDEN_UNITS,
                           output_shape=3,
                           num_epochs=NUM_EPOCHS,
@@ -117,14 +117,14 @@ models = models.RNO_four_late_non_linear_merge(input_shape=1,
                           )
 
 # Setup optimizer
-optimizer = torch.optim.Adam(params=models.parameters(), lr = LEARNING_RATE)
+optimizer = torch.optim.Adam(params=model.parameters(), lr = LEARNING_RATE)
 optimizer_name = optimizer.__class__.__name__
 # Setup loss function
 #loss_fn = torch.nn.HuberLoss(delta=50)
 loss_fn = torch.nn.MSELoss()
 loss_fn_name = loss_fn.__class__.__name__
 
-experiment_name = (f'exp_{models.__class__.__name__}' +
+experiment_name = (f'exp_{model.__class__.__name__}' +
                   f'_bn{BATCH_SIZE}' +
                   f'_tr{len(train_data_loader)}' +
                   f'_te{len(test_data_loader)}' +
@@ -173,13 +173,13 @@ logging.basicConfig(filename=f'{experiment_path}/experiment.log',
 logger.info(f"Starting experiment: {experiment_name}")
 logger.info(f"Device: {device}")
 logger.info(f"PyTorch version: {torch.__version__}")
-logger.info(f"Model: {type(models).__name__}")
+logger.info(f"Model: {type(model).__name__}")
 
 logger.info(f"Optimizer: {optimizer_name}")
 logger.info(f"Loss function: {loss_fn_name}")
 
 
-train_test(model = models, 
+train_test(model = model, 
            train_dataloader = train_data_loader, 
            test_dataloader = test_data_loader, 
            optimizer = optimizer,
